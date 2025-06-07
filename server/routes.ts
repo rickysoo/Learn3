@@ -88,33 +88,50 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
     throw new Error("YouTube API key not configured");
   }
 
-  // Single optimized search query
-  const searchQuery = `${query} tutorial beginner explained`;
-  const searchUrl = `https://www.googleapis.com/youtube/v3/search?` +
-    `key=${YOUTUBE_API_KEY}&` +
-    `q=${encodeURIComponent(searchQuery)}&` +
-    `part=snippet&` +
-    `type=video&` +
-    `maxResults=25&` +
-    `order=relevance&` +
-    `videoDuration=medium&` +
-    `safeSearch=strict&` +
-    `relevanceLanguage=en`;
+  // Create multiple specific search queries to ensure topic relevance
+  const searchQueries = [
+    `"${query}" history documentary`,
+    `"${query}" explained tutorial`,
+    `learn about "${query}" beginner guide`,
+    `${query} introduction overview`
+  ];
 
-  const searchResponse = await fetch(searchUrl);
-  if (!searchResponse.ok) {
-    throw new Error(`YouTube API search failed: ${searchResponse.statusText}`);
+  let allVideos: any[] = [];
+
+  // Search with multiple specific queries
+  for (const searchQuery of searchQueries) {
+    const searchUrl = `https://www.googleapis.com/youtube/v3/search?` +
+      `key=${YOUTUBE_API_KEY}&` +
+      `q=${encodeURIComponent(searchQuery)}&` +
+      `part=snippet&` +
+      `type=video&` +
+      `maxResults=10&` +
+      `order=relevance&` +
+      `videoDuration=medium&` +
+      `safeSearch=strict&` +
+      `relevanceLanguage=en`;
+
+    try {
+      const searchResponse = await fetch(searchUrl);
+      if (searchResponse.ok) {
+        const searchData = await searchResponse.json();
+        allVideos.push(...searchData.items);
+      }
+    } catch (error) {
+      console.error(`Search query failed: ${searchQuery}`, error);
+    }
   }
-  
-  const searchData = await searchResponse.json();
-  const allVideos = searchData.items;
 
   // Remove duplicates
-  if (allVideos.length === 0) {
+  const uniqueVideos = allVideos.filter((video, index, self) => 
+    index === self.findIndex((v) => v.id.videoId === video.id.videoId)
+  );
+
+  if (uniqueVideos.length === 0) {
     throw new Error(`No videos found for topic: ${query}`);
   }
 
-  const videoIds = allVideos.slice(0, 15).map((item: any) => item.id.videoId).join(",");
+  const videoIds = uniqueVideos.slice(0, 15).map((item: any) => item.id.videoId).join(",");
 
   // Get video details including duration
   const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?` +
@@ -147,7 +164,7 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
     })
     .filter((video: any) => video.durationSeconds >= 300 && video.durationSeconds <= 1200); // 5-20 minutes
 
-  // Use improved keyword matching for fast, relevant results
+  // Strict relevance filtering for topic accuracy
   const scoredVideos = processedVideos.map(video => {
     const title = video.title.toLowerCase();
     const description = video.description.toLowerCase();
@@ -157,44 +174,68 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
     let score = 0;
     const topicWords = topicLower.split(' ').filter(word => word.length > 2);
     
-    // Higher weight for title matches
+    // Strict requirement: ALL major topic words must appear in title or description
+    let hasAllKeywords = true;
     for (const word of topicWords) {
-      if (title.includes(word)) score += 0.5;
-      if (description.includes(word)) score += 0.2;
-      if (channelName.includes(word)) score += 0.1;
+      if (!title.includes(word) && !description.includes(word)) {
+        hasAllKeywords = false;
+        break;
+      }
     }
     
-    // Bonus for educational indicators
-    const educationalKeywords = ['tutorial', 'explain', 'guide', 'intro', 'beginner', 'learn', 'course', 'lesson'];
+    if (!hasAllKeywords) {
+      return {
+        ...video,
+        relevanceScore: 0,
+        relevanceReasoning: "Missing key topic words"
+      };
+    }
+    
+    // Score based on exact topic matches
+    for (const word of topicWords) {
+      if (title.includes(word)) score += 0.6;
+      if (description.includes(word)) score += 0.3;
+    }
+    
+    // Check for exact phrase match (highest score)
+    if (title.includes(topicLower) || description.includes(topicLower)) {
+      score += 1.0;
+    }
+    
+    // Bonus for educational content
+    const educationalKeywords = ['history', 'documentary', 'explained', 'tutorial', 'guide', 'introduction', 'overview'];
     for (const keyword of educationalKeywords) {
-      if (title.includes(keyword)) score += 0.3;
+      if (title.includes(keyword)) score += 0.4;
     }
     
-    // Penalty for clearly unrelated content
-    const unrelatedKeywords = ['song', 'music', 'funny', 'prank', 'reaction', 'vlog'];
+    // Heavy penalty for clearly unrelated content
+    const unrelatedKeywords = ['song', 'music', 'funny', 'prank', 'reaction', 'vlog', 'gaming', 'stocks', 'investment', 'mahjong'];
     for (const keyword of unrelatedKeywords) {
-      if (title.includes(keyword)) score -= 0.5;
+      if (title.includes(keyword) || description.includes(keyword)) {
+        score = 0;
+        break;
+      }
     }
     
     return {
       ...video,
-      relevanceScore: Math.max(0, Math.min(1, score)),
-      relevanceReasoning: "Enhanced keyword matching"
+      relevanceScore: Math.max(0, Math.min(2, score)),
+      relevanceReasoning: "Strict topic matching"
     };
   });
 
-  // Filter and sort by relevance and popularity
+  // Only return highly relevant videos
   return scoredVideos
-    .filter(video => video.relevanceScore >= 0.4) // Lower threshold for better coverage
+    .filter(video => video.relevanceScore >= 0.8) // Much stricter threshold
     .sort((a, b) => {
       // Primary sort: relevance score
-      if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.2) {
+      if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.1) {
         return b.relevanceScore - a.relevanceScore;
       }
       // Secondary sort: view count for similar relevance
       return b.viewCount - a.viewCount;
     })
-    .slice(0, 12); // Return top 12 most relevant videos
+    .slice(0, 10); // Return top 10 most relevant videos
 }
 
 // Simple learning path optimization without AI for speed
