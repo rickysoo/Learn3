@@ -37,8 +37,11 @@ export default function Home() {
       if (error instanceof Error) {
         const errorMessage = error.message;
         
-        if (errorMessage.startsWith("API_ERROR:")) {
-          title = "YouTube API Unavailable";
+        if (errorMessage.startsWith("DAILY_LIMIT_REACHED:")) {
+          title = "Daily Search Limit Reached";
+          description = errorMessage.replace("DAILY_LIMIT_REACHED: ", "");
+        } else if (errorMessage.startsWith("API_ERROR:")) {
+          title = "Search Unavailable";
           description = errorMessage.replace("API_ERROR: ", "");
         } else {
           description = errorMessage;

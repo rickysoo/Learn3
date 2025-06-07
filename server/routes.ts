@@ -129,8 +129,8 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
         try {
           const errorData = JSON.parse(errorText);
           if (errorData.error?.errors?.[0]?.reason === "quotaExceeded") {
-            errorMessage = "YouTube API quota exceeded. Please provide a fresh API key with available quota.";
-            errorType = "QUOTA_EXCEEDED";
+            errorMessage = "We've reached our daily search limit! Please try again tomorrow when the quota resets (midnight Pacific Time).";
+            errorType = "DAILY_LIMIT_REACHED";
           } else {
             errorMessage = "YouTube API access denied. Please check your API key permissions.";
             errorType = "ACCESS_DENIED";
