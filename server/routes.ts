@@ -343,7 +343,7 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
   return filteredVideos.slice(0, 8);
 }
 
-// Simple learning path optimization without AI for speed
+// Intelligent learning path optimization with difficulty progression
 function optimizeLearningPath(videos: any[], query: string): any[] {
   if (videos.length === 0) {
     return [];
@@ -362,38 +362,86 @@ function optimizeLearningPath(videos: any[], query: string): any[] {
     index === self.findIndex(v => v.id === video.id)
   );
 
-  // Sort by relevance score first, then by duration for progression
-  const sortedVideos = uniqueVideos.sort((a, b) => {
-    if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.1) {
-      return b.relevanceScore - a.relevanceScore;
+  // Analyze and categorize videos by difficulty level
+  const categorizedVideos = uniqueVideos.map(video => {
+    const title = video.title.toLowerCase();
+    const description = video.description?.toLowerCase() || '';
+    
+    let difficultyScore = 0;
+    
+    // Beginner indicators (lower scores = beginner)
+    if (title.includes('beginner') || title.includes('intro') || title.includes('basic') || 
+        title.includes('start') || title.includes('first') || title.includes('lesson 1') ||
+        description.includes('beginner') || description.includes('introduction')) {
+      difficultyScore = 1;
     }
-    return a.durationSeconds - b.durationSeconds;
+    // Intermediate indicators
+    else if (title.includes('intermediate') || title.includes('guide') || title.includes('learn') ||
+             title.includes('tutorial') || title.includes('course') || title.includes('step by step') ||
+             description.includes('building on') || description.includes('next level')) {
+      difficultyScore = 2;
+    }
+    // Advanced indicators (higher scores = advanced)
+    else if (title.includes('advanced') || title.includes('master') || title.includes('expert') ||
+             title.includes('complete') || title.includes('comprehensive') || title.includes('deep') ||
+             description.includes('advanced') || description.includes('comprehensive')) {
+      difficultyScore = 3;
+    }
+    // Default based on duration and content complexity
+    else {
+      if (video.durationSeconds > 1800) difficultyScore = 3; // 30+ min = advanced
+      else if (video.durationSeconds > 900) difficultyScore = 2; // 15+ min = intermediate  
+      else difficultyScore = 1; // shorter = beginner
+    }
+    
+    return { ...video, difficultyScore };
   });
 
-  // Select 3 diverse videos ensuring no duplicates
+  // Sort by relevance first, then by difficulty for proper progression
+  const sortedVideos = categorizedVideos.sort((a, b) => {
+    if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.2) {
+      return b.relevanceScore - a.relevanceScore;
+    }
+    return a.difficultyScore - b.difficultyScore;
+  });
+
+  // Log difficulty categorization
+  console.log("Video difficulty analysis:");
+  sortedVideos.forEach(video => {
+    console.log(`"${video.title}": difficulty ${video.difficultyScore}, relevance ${video.relevanceScore}`);
+  });
+
+  // Select videos with proper difficulty progression
   const selectedVideos = [];
   
-  // Start with the highest relevance video
-  selectedVideos.push(sortedVideos[0]);
+  // Find best beginner video (difficulty 1)
+  const beginnerVideo = sortedVideos.find(v => v.difficultyScore === 1) || sortedVideos[0];
+  selectedVideos.push(beginnerVideo);
+  console.log(`Selected beginner: "${beginnerVideo.title}" (difficulty ${beginnerVideo.difficultyScore})`);
   
-  // Find a different video for intermediate level
-  for (let i = 1; i < sortedVideos.length; i++) {
-    if (sortedVideos[i].id !== selectedVideos[0].id) {
-      selectedVideos.push(sortedVideos[i]);
-      break;
-    }
+  // Find best intermediate video (difficulty 2, different from beginner)
+  const intermediateVideo = sortedVideos.find(v => 
+    v.difficultyScore === 2 && v.id !== beginnerVideo.id
+  ) || sortedVideos.find(v => v.id !== beginnerVideo.id) || sortedVideos[1];
+  if (intermediateVideo) {
+    selectedVideos.push(intermediateVideo);
+    console.log(`Selected intermediate: "${intermediateVideo.title}" (difficulty ${intermediateVideo.difficultyScore})`);
   }
   
-  // Find a third different video for advanced level
-  for (let i = selectedVideos.length; i < sortedVideos.length; i++) {
-    if (sortedVideos[i].id !== selectedVideos[0].id && 
-        sortedVideos[i].id !== selectedVideos[1]?.id) {
-      selectedVideos.push(sortedVideos[i]);
-      break;
-    }
+  // Find best advanced video (difficulty 3, different from others)
+  const advancedVideo = sortedVideos.find(v => 
+    v.difficultyScore === 3 && 
+    v.id !== beginnerVideo.id && 
+    v.id !== intermediateVideo?.id
+  ) || sortedVideos.find(v => 
+    v.id !== beginnerVideo.id && v.id !== intermediateVideo?.id
+  ) || sortedVideos[2];
+  if (advancedVideo) {
+    selectedVideos.push(advancedVideo);
+    console.log(`Selected advanced: "${advancedVideo.title}" (difficulty ${advancedVideo.difficultyScore})`);
   }
 
-  // If we still don't have 3 unique videos, fill with remaining unique ones
+  // Fill remaining slots with unique videos if needed
   while (selectedVideos.length < 3 && selectedVideos.length < uniqueVideos.length) {
     for (const video of sortedVideos) {
       if (!selectedVideos.find(selected => selected.id === video.id)) {
