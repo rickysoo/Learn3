@@ -31,6 +31,9 @@ export interface YouTubeVideo {
   thumbnailUrl: string;
   publishedAt: string;
   durationSeconds?: number;
+  relevanceScore?: number;
+  relevanceReasoning?: string;
+  viewCount?: number;
 }
 
 export interface VideoSearchResult {

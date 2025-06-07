@@ -90,10 +90,10 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
 
   // Create multiple specific search queries to ensure topic relevance
   const searchQueries = [
-    `"${query}" history documentary`,
-    `"${query}" explained tutorial`,
-    `learn about "${query}" beginner guide`,
-    `${query} introduction overview`
+    `${query} tutorial beginner explained`,
+    `${query} guide introduction basics`,
+    `learn ${query} step by step`,
+    `${query} fundamentals course`
   ];
 
   let allVideos: any[] = [];
@@ -264,18 +264,36 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
     }
   }
 
-  // Only return videos with high AI-confirmed relevance
-  return scoredVideos
-    .filter(video => video.relevanceScore >= 0.7) // High threshold for AI-scored content
+  // Return videos with adaptive threshold
+  let filteredVideos = scoredVideos
+    .filter(video => video.relevanceScore >= 0.7)
     .sort((a, b) => {
-      // Primary sort: relevance score
       if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.1) {
         return b.relevanceScore - a.relevanceScore;
       }
-      // Secondary sort: view count for similar relevance
       return b.viewCount - a.viewCount;
-    })
-    .slice(0, 8); // Return top 8 most relevant videos
+    });
+
+  // If not enough high-quality videos, lower the threshold
+  if (filteredVideos.length < 3) {
+    filteredVideos = scoredVideos
+      .filter(video => video.relevanceScore >= 0.5)
+      .sort((a, b) => {
+        if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.1) {
+          return b.relevanceScore - a.relevanceScore;
+        }
+        return b.viewCount - a.viewCount;
+      });
+  }
+
+  // Final fallback - return any videos with some relevance
+  if (filteredVideos.length < 3) {
+    filteredVideos = scoredVideos
+      .filter(video => video.relevanceScore >= 0.3)
+      .sort((a, b) => b.viewCount - a.viewCount);
+  }
+
+  return filteredVideos.slice(0, 8);
 }
 
 // Simple learning path optimization without AI for speed
@@ -302,8 +320,16 @@ function optimizeLearningPath(videos: any[], query: string): any[] {
 
 // Generate learning path with 3 sequential videos
 function generateLearningPath(videos: YouTubeVideo[], query: string) {
+  if (videos.length === 0) {
+    throw new Error("No videos found for this topic");
+  }
+  
+  // If we have fewer than 3 videos, duplicate the best ones
   if (videos.length < 3) {
-    throw new Error("Not enough suitable videos found for this topic");
+    const sortedVideos = [...videos].sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0));
+    while (videos.length < 3 && sortedVideos.length > 0) {
+      videos.push({...sortedVideos[0]});
+    }
   }
 
   // Use optimized learning progression
