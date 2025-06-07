@@ -88,51 +88,33 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
     throw new Error("YouTube API key not configured");
   }
 
-  // Create multiple targeted search queries
-  const searchQueries = [
-    `${query} explained beginner tutorial`,
-    `${query} introduction basics`,
-    `${query} fundamentals guide`,
-    `learn ${query} step by step`,
-    `${query} educational video`
-  ];
+  // Single optimized search query
+  const searchQuery = `${query} tutorial beginner explained`;
+  const searchUrl = `https://www.googleapis.com/youtube/v3/search?` +
+    `key=${YOUTUBE_API_KEY}&` +
+    `q=${encodeURIComponent(searchQuery)}&` +
+    `part=snippet&` +
+    `type=video&` +
+    `maxResults=25&` +
+    `order=relevance&` +
+    `videoDuration=medium&` +
+    `safeSearch=strict&` +
+    `relevanceLanguage=en`;
 
-  let allVideos: any[] = [];
-
-  // Search with multiple queries to get diverse results
-  for (const searchQuery of searchQueries) {
-    const searchUrl = `https://www.googleapis.com/youtube/v3/search?` +
-      `key=${YOUTUBE_API_KEY}&` +
-      `q=${encodeURIComponent(searchQuery)}&` +
-      `part=snippet&` +
-      `type=video&` +
-      `maxResults=15&` +
-      `order=relevance&` +
-      `videoDuration=medium&` +
-      `safeSearch=strict&` +
-      `relevanceLanguage=en`;
-
-    try {
-      const searchResponse = await fetch(searchUrl);
-      if (searchResponse.ok) {
-        const searchData = await searchResponse.json();
-        allVideos.push(...searchData.items);
-      }
-    } catch (error) {
-      console.error(`Search query failed: ${searchQuery}`, error);
-    }
+  const searchResponse = await fetch(searchUrl);
+  if (!searchResponse.ok) {
+    throw new Error(`YouTube API search failed: ${searchResponse.statusText}`);
   }
+  
+  const searchData = await searchResponse.json();
+  const allVideos = searchData.items;
 
   // Remove duplicates
-  const uniqueVideos = allVideos.filter((video, index, self) => 
-    index === self.findIndex((v) => v.id.videoId === video.id.videoId)
-  );
-
-  if (uniqueVideos.length === 0) {
+  if (allVideos.length === 0) {
     throw new Error(`No videos found for topic: ${query}`);
   }
 
-  const videoIds = uniqueVideos.slice(0, 50).map((item: any) => item.id.videoId).join(",");
+  const videoIds = allVideos.slice(0, 15).map((item: any) => item.id.videoId).join(",");
 
   // Get video details including duration
   const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?` +
@@ -165,90 +147,86 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
     })
     .filter((video: any) => video.durationSeconds >= 300 && video.durationSeconds <= 1200); // 5-20 minutes
 
-  // Score relevance using AI
-  const scoredVideos = [];
-  for (const video of processedVideos) {
-    const relevance = await scoreVideoRelevance(video, query);
-    scoredVideos.push({
+  // Use improved keyword matching for fast, relevant results
+  const scoredVideos = processedVideos.map(video => {
+    const title = video.title.toLowerCase();
+    const description = video.description.toLowerCase();
+    const channelName = video.channelName.toLowerCase();
+    const topicLower = query.toLowerCase();
+    
+    let score = 0;
+    const topicWords = topicLower.split(' ').filter(word => word.length > 2);
+    
+    // Higher weight for title matches
+    for (const word of topicWords) {
+      if (title.includes(word)) score += 0.5;
+      if (description.includes(word)) score += 0.2;
+      if (channelName.includes(word)) score += 0.1;
+    }
+    
+    // Bonus for educational indicators
+    const educationalKeywords = ['tutorial', 'explain', 'guide', 'intro', 'beginner', 'learn', 'course', 'lesson'];
+    for (const keyword of educationalKeywords) {
+      if (title.includes(keyword)) score += 0.3;
+    }
+    
+    // Penalty for clearly unrelated content
+    const unrelatedKeywords = ['song', 'music', 'funny', 'prank', 'reaction', 'vlog'];
+    for (const keyword of unrelatedKeywords) {
+      if (title.includes(keyword)) score -= 0.5;
+    }
+    
+    return {
       ...video,
-      relevanceScore: relevance.score,
-      relevanceReasoning: relevance.reasoning
-    });
-  }
+      relevanceScore: Math.max(0, Math.min(1, score)),
+      relevanceReasoning: "Enhanced keyword matching"
+    };
+  });
 
-  // Filter out low-relevance videos and sort by relevance + popularity
+  // Filter and sort by relevance and popularity
   return scoredVideos
-    .filter(video => video.relevanceScore >= 0.6) // Only keep highly relevant videos
+    .filter(video => video.relevanceScore >= 0.4) // Lower threshold for better coverage
     .sort((a, b) => {
       // Primary sort: relevance score
-      if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.1) {
+      if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.2) {
         return b.relevanceScore - a.relevanceScore;
       }
       // Secondary sort: view count for similar relevance
       return b.viewCount - a.viewCount;
     })
-    .slice(0, 15); // Return top 15 most relevant videos
+    .slice(0, 12); // Return top 12 most relevant videos
 }
 
-// AI-powered learning path optimization
-async function optimizeLearningPath(videos: any[], query: string): Promise<any[]> {
-  if (!OPENAI_API_KEY) {
-    // Fallback to simple progression without AI
-    return videos
-      .sort((a, b) => a.durationSeconds - b.durationSeconds)
-      .slice(0, 3);
+// Simple learning path optimization without AI for speed
+function optimizeLearningPath(videos: any[], query: string): any[] {
+  if (videos.length < 3) {
+    return videos;
   }
 
-  try {
-    const videoSummaries = videos.map((v, i) => 
-      `${i + 1}. "${v.title}" (${Math.floor(v.durationSeconds / 60)}min) - ${v.description.substring(0, 150)}...`
-    ).join('\n');
+  // Sort by relevance score first, then by duration for progression
+  const sortedVideos = videos.sort((a, b) => {
+    if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.1) {
+      return b.relevanceScore - a.relevanceScore;
+    }
+    return a.durationSeconds - b.durationSeconds;
+  });
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert educator designing learning paths. Select exactly 3 videos that create the best beginner-to-advanced progression for the topic. Videos should build upon each other logically. Respond with JSON: { \"selections\": [video_index1, video_index2, video_index3], \"reasoning\": \"explanation\" }"
-        },
-        {
-          role: "user",
-          content: `Topic: "${query}"
+  // Select videos that create good progression
+  const beginner = sortedVideos[0]; // Highest relevance, likely shorter
+  const intermediate = sortedVideos[Math.floor(sortedVideos.length / 2)]; // Middle option
+  const advanced = sortedVideos[sortedVideos.length - 1]; // Longer, more detailed
 
-Available videos:
-${videoSummaries}
-
-Select 3 videos (by number) that create the best learning progression from beginner to advanced level.`
-        }
-      ],
-      response_format: { type: "json_object" },
-      max_tokens: 300
-    });
-
-    const result = JSON.parse(response.choices[0].message.content || '{"selections": [0, 1, 2]}');
-    const selectedIndices = result.selections || [0, 1, 2];
-    
-    return selectedIndices
-      .slice(0, 3)
-      .map((index: number) => videos[index] || videos[0])
-      .filter(Boolean);
-  } catch (error) {
-    console.error("AI learning path optimization failed:", error);
-    // Fallback to duration-based selection
-    return videos
-      .sort((a, b) => a.durationSeconds - b.durationSeconds)
-      .slice(0, 3);
-  }
+  return [beginner, intermediate, advanced];
 }
 
 // Generate learning path with 3 sequential videos
-async function generateLearningPath(videos: YouTubeVideo[], query: string) {
+function generateLearningPath(videos: YouTubeVideo[], query: string) {
   if (videos.length < 3) {
     throw new Error("Not enough suitable videos found for this topic");
   }
 
-  // Use AI to optimize the learning progression
-  const optimizedVideos = await optimizeLearningPath(videos, query);
+  // Use optimized learning progression
+  const optimizedVideos = optimizeLearningPath(videos, query);
 
   // Assign appropriate levels and enhance descriptions
   const levels = ["beginner", "intermediate", "advanced"];
@@ -284,7 +262,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const youtubeVideos = await searchYouTubeVideos(query);
       
       // Generate learning path
-      const learningPath = await generateLearningPath(youtubeVideos, query);
+      const learningPath = generateLearningPath(youtubeVideos, query);
       
       // Clear previous videos for this topic and save new ones
       await storage.clearVideosByTopic(query);
