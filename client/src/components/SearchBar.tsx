@@ -9,12 +9,12 @@ interface SearchBarProps {
 }
 
 const POPULAR_TOPICS = [
-  "Machine Learning",
-  "Digital Marketing", 
-  "Web Development",
-  "Quantum Computing",
-  "Climate Change",
-  "Cryptocurrency"
+  "Artificial Intelligence",
+  "Prompt Engineering", 
+  "Custom GPT",
+  "AI Chatbot",
+  "AI Automation",
+  "AI Agent"
 ];
 
 export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
@@ -71,7 +71,7 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
           </div>
 
           <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <span className="text-sm text-slate-500 mr-2">Popular:</span>
+            <span className="text-sm text-slate-500 mr-2"></span>
             {POPULAR_TOPICS.map((topic) => (
               <Button
                 key={topic}
