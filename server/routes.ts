@@ -169,34 +169,39 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
   
   if (OPENAI_API_KEY && processedVideos.length > 0) {
     try {
-      // Process videos with AI for precise relevance scoring
-      for (const video of processedVideos.slice(0, 12)) {
-        const response = await openai.chat.completions.create({
-          model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-          messages: [
-            {
-              role: "system",
-              content: "You are an expert at determining if educational videos match specific learning topics. Rate the relevance on a scale of 0.0 to 1.0 where 1.0 means the video is directly about the exact topic and 0.0 means completely unrelated. Be very strict - only rate 0.8+ if the video is specifically about the requested topic. Respond with JSON: { \"score\": number, \"reasoning\": \"brief explanation\" }"
-            },
-            {
-              role: "user",
-              content: `Topic: "${query}"
-              
-Video Title: "${video.title}"
-Video Description: "${video.description?.substring(0, 400) || 'No description'}"
+      // Batch process videos with AI for faster processing
+      const batchSize = 6; // Process in smaller batches for speed
+      const videosToProcess = processedVideos.slice(0, batchSize);
+      
+      const videoDescriptions = videosToProcess.map((video, i) => 
+        `${i + 1}. Title: "${video.title}"\nDescription: "${video.description?.substring(0, 200) || 'No description'}"\n`
+      ).join('\n');
 
-Rate how relevant this video is to learning specifically about "${query}". Be strict - Singapore history is NOT Malaysia history, aviation mysteries are NOT history, etc.`
-            }
-          ],
-          response_format: { type: "json_object" },
-          max_tokens: 150
-        });
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: "Rate each video's relevance to the learning topic on a scale of 0.0 to 1.0. Be very strict - only rate 0.8+ if specifically about the exact topic. Respond with JSON: { \"scores\": [0.9, 0.2, 0.8, ...], \"reasoning\": [\"reason1\", \"reason2\", ...] }"
+          },
+          {
+            role: "user",
+            content: `Topic: "${query}"\n\nVideos:\n${videoDescriptions}\n\nRate relevance for learning specifically about "${query}". Be strict - Singapore history ≠ Malaysia history, mysteries ≠ history.`
+          }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 300
+      });
 
-        const result = JSON.parse(response.choices[0].message.content || '{"score": 0, "reasoning": "No response"}');
+      const result = JSON.parse(response.choices[0].message.content || '{"scores": [], "reasoning": []}');
+      const scores = result.scores || [];
+      const reasonings = result.reasoning || [];
+      
+      for (let i = 0; i < videosToProcess.length; i++) {
         scoredVideos.push({
-          ...video,
-          relevanceScore: Math.max(0, Math.min(1, result.score)),
-          relevanceReasoning: result.reasoning || "AI analysis"
+          ...videosToProcess[i],
+          relevanceScore: Math.max(0, Math.min(1, scores[i] || 0.5)),
+          relevanceReasoning: reasonings[i] || "AI batch analysis"
         });
       }
     } catch (error) {
