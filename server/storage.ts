@@ -26,7 +26,17 @@ export class MemStorage implements IStorage {
     
     for (const insertVideo of insertVideos) {
       const id = this.currentId++;
-      const video: Video = { ...insertVideo, id };
+      const video: Video = { 
+        id,
+        youtubeId: insertVideo.youtubeId,
+        title: insertVideo.title,
+        description: insertVideo.description || null,
+        channelName: insertVideo.channelName || null,
+        duration: insertVideo.duration || null,
+        thumbnailUrl: insertVideo.thumbnailUrl || null,
+        level: insertVideo.level || null,
+        topic: insertVideo.topic || null,
+      };
       this.videos.set(id, video);
       savedVideos.push(video);
     }

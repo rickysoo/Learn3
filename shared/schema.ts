@@ -30,6 +30,7 @@ export interface YouTubeVideo {
   duration: string; // ISO 8601 duration format
   thumbnailUrl: string;
   publishedAt: string;
+  durationSeconds?: number;
 }
 
 export interface VideoSearchResult {

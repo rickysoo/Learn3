@@ -59,11 +59,7 @@ export default function Home() {
               </div>
               <h1 className="text-xl font-bold text-slate-900">LevelUp</h1>
             </div>
-            <nav className="hidden md:flex items-center space-x-6">
-              <a href="#" className="text-slate-600 hover:text-primary transition-colors">How it Works</a>
-              <a href="#" className="text-slate-600 hover:text-primary transition-colors">Popular Topics</a>
-              <a href="#" className="text-slate-600 hover:text-primary transition-colors">About</a>
-            </nav>
+
           </div>
         </div>
       </header>
@@ -149,25 +145,7 @@ export default function Home() {
                 ))}
               </div>
 
-              <div className="mt-16 text-center">
-                <Card className="max-w-2xl mx-auto">
-                  <CardContent className="p-8">
-                    <h4 className="text-2xl font-bold text-slate-900 mb-4">Ready for the Next Level?</h4>
-                    <p className="text-slate-600 mb-6">Complete this learning path and explore related topics to deepen your understanding.</p>
-                    <div className="flex flex-wrap justify-center gap-4">
-                      <Button className="bg-accent hover:bg-accent/90 text-white">
-                        Mark as Complete
-                      </Button>
-                      <Button variant="secondary">
-                        Save for Later
-                      </Button>
-                      <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
-                        Explore Related Topics
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+
             </>
           )}
         </div>
@@ -181,43 +159,17 @@ export default function Home() {
       />
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
-                  <GraduationCap className="h-5 w-5 text-white" />
-                </div>
-                <h1 className="text-xl font-bold">LevelUp</h1>
-              </div>
-              <p className="text-slate-400 mb-4 max-w-md">
-                Transform your learning journey with curated video paths that take you from beginner to advanced in any topic.
-              </p>
+      <footer className="bg-slate-900 text-white py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
+              <GraduationCap className="h-5 w-5 text-white" />
             </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white transition-colors">How it Works</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Popular Topics</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">API</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-              </ul>
-            </div>
+            <h1 className="text-xl font-bold">LevelUp</h1>
           </div>
-          
-          <div className="mt-8 pt-8 border-t border-slate-800 text-center text-slate-400">
-            <p>&copy; 2024 LevelUp. All rights reserved. Made with ❤️ for learners everywhere.</p>
-          </div>
+          <p className="text-slate-400">
+            Transform your learning journey with curated video paths
+          </p>
         </div>
       </footer>
     </div>
