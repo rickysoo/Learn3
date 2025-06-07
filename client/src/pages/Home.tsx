@@ -31,9 +31,23 @@ export default function Home() {
         });
       }, 100);
     } catch (error) {
+      let title = "Search Failed";
+      let description = "Failed to search videos. Please try again.";
+      
+      if (error instanceof Error) {
+        const errorMessage = error.message;
+        
+        if (errorMessage.startsWith("API_ERROR:")) {
+          title = "YouTube API Unavailable";
+          description = errorMessage.replace("API_ERROR: ", "");
+        } else {
+          description = errorMessage;
+        }
+      }
+      
       toast({
-        title: "Search Failed",
-        description: error instanceof Error ? error.message : "Failed to search videos. Please try again.",
+        title,
+        description,
         variant: "destructive",
       });
     }

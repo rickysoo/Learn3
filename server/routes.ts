@@ -88,6 +88,8 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
     throw new Error("YouTube API key not configured");
   }
 
+
+
   // Create multiple specific search queries to ensure topic relevance
   const searchQueries = [
     `${query} tutorial beginner explained`,
@@ -372,6 +374,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const { query } = searchSchema.parse(req.body);
+
+      // Test YouTube API availability first
+      try {
+        const testUrl = `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&q=test&part=snippet&type=video&maxResults=1`;
+        const testResponse = await fetch(testUrl);
+        
+        if (!testResponse.ok) {
+          const errorText = await testResponse.text();
+          let errorMessage = "YouTube API is unavailable";
+          let errorType = "API_ERROR";
+          
+          if (testResponse.status === 403) {
+            try {
+              const errorData = JSON.parse(errorText);
+              if (errorData.error?.errors?.[0]?.reason === "quotaExceeded") {
+                errorMessage = "YouTube API quota exceeded. Please provide a fresh API key with available quota.";
+                errorType = "QUOTA_EXCEEDED";
+              } else {
+                errorMessage = "YouTube API access denied. Please check your API key permissions.";
+                errorType = "ACCESS_DENIED";
+              }
+            } catch {
+              errorMessage = "YouTube API access forbidden. Please verify your API key.";
+              errorType = "ACCESS_DENIED";
+            }
+          } else if (testResponse.status === 400) {
+            errorMessage = "YouTube API key is invalid or expired. Please provide a valid API key.";
+            errorType = "INVALID_KEY";
+          }
+          
+          return res.status(503).json({ 
+            error: errorType,
+            message: errorMessage,
+            needsApiKey: true
+          });
+        }
+      } catch (apiError) {
+        console.error("YouTube API test failed:", apiError);
+        return res.status(503).json({ 
+          error: "API_UNAVAILABLE",
+          message: "Unable to connect to YouTube API. Please check your internet connection and API key.",
+          needsApiKey: true
+        });
+      }
 
       // Search YouTube for videos
       const youtubeVideos = await searchYouTubeVideos(query);
