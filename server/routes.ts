@@ -332,17 +332,12 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
     console.log(`Medium relevance videos (>=0.6): ${filteredVideos.length}`);
   }
 
-  // Final fallback - only accept moderately relevant content
+  // Final fallback - return the best available videos regardless of score
   if (filteredVideos.length < 3) {
     filteredVideos = scoredVideos
-      .filter(video => video.relevanceScore >= 0.4)
-      .sort((a, b) => b.relevanceScore - a.relevanceScore);
-    console.log(`Low relevance videos (>=0.4): ${filteredVideos.length}`);
-  }
-
-  // If still no relevant videos, throw error
-  if (filteredVideos.length === 0) {
-    throw new Error(`No relevant videos found for "${query}". Please try a more specific search term.`);
+      .sort((a, b) => b.relevanceScore - a.relevanceScore)
+      .slice(0, Math.max(3, Math.min(8, scoredVideos.length)));
+    console.log(`Using best available videos: ${filteredVideos.length}`);
   }
 
   return filteredVideos.slice(0, 8);
@@ -350,24 +345,65 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
 
 // Simple learning path optimization without AI for speed
 function optimizeLearningPath(videos: any[], query: string): any[] {
-  if (videos.length < 3) {
+  if (videos.length === 0) {
+    return [];
+  }
+  
+  if (videos.length === 1) {
+    return [videos[0]];
+  }
+  
+  if (videos.length === 2) {
     return videos;
   }
 
+  // Remove any duplicates by video ID first
+  const uniqueVideos = videos.filter((video, index, self) => 
+    index === self.findIndex(v => v.id === video.id)
+  );
+
   // Sort by relevance score first, then by duration for progression
-  const sortedVideos = videos.sort((a, b) => {
+  const sortedVideos = uniqueVideos.sort((a, b) => {
     if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.1) {
       return b.relevanceScore - a.relevanceScore;
     }
     return a.durationSeconds - b.durationSeconds;
   });
 
-  // Select videos that create good progression
-  const beginner = sortedVideos[0]; // Highest relevance, likely shorter
-  const intermediate = sortedVideos[Math.floor(sortedVideos.length / 2)]; // Middle option
-  const advanced = sortedVideos[sortedVideos.length - 1]; // Longer, more detailed
+  // Select 3 diverse videos ensuring no duplicates
+  const selectedVideos = [];
+  
+  // Start with the highest relevance video
+  selectedVideos.push(sortedVideos[0]);
+  
+  // Find a different video for intermediate level
+  for (let i = 1; i < sortedVideos.length; i++) {
+    if (sortedVideos[i].id !== selectedVideos[0].id) {
+      selectedVideos.push(sortedVideos[i]);
+      break;
+    }
+  }
+  
+  // Find a third different video for advanced level
+  for (let i = selectedVideos.length; i < sortedVideos.length; i++) {
+    if (sortedVideos[i].id !== selectedVideos[0].id && 
+        sortedVideos[i].id !== selectedVideos[1]?.id) {
+      selectedVideos.push(sortedVideos[i]);
+      break;
+    }
+  }
 
-  return [beginner, intermediate, advanced];
+  // If we still don't have 3 unique videos, fill with remaining unique ones
+  while (selectedVideos.length < 3 && selectedVideos.length < uniqueVideos.length) {
+    for (const video of sortedVideos) {
+      if (!selectedVideos.find(selected => selected.id === video.id)) {
+        selectedVideos.push(video);
+        break;
+      }
+    }
+  }
+
+  return selectedVideos.slice(0, 3);
 }
 
 // Generate learning path with 3 sequential videos
@@ -375,16 +411,8 @@ function generateLearningPath(videos: YouTubeVideo[], query: string) {
   if (videos.length === 0) {
     throw new Error("No videos found for this topic");
   }
-  
-  // If we have fewer than 3 videos, duplicate the best ones
-  if (videos.length < 3) {
-    const sortedVideos = [...videos].sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0));
-    while (videos.length < 3 && sortedVideos.length > 0) {
-      videos.push({...sortedVideos[0]});
-    }
-  }
 
-  // Use optimized learning progression
+  // Use optimized learning progression (no duplicates)
   const optimizedVideos = optimizeLearningPath(videos, query);
 
   // Assign appropriate levels and enhance descriptions
