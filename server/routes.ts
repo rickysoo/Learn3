@@ -105,17 +105,22 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
       `q=${encodeURIComponent(searchQuery)}&` +
       `part=snippet&` +
       `type=video&` +
-      `maxResults=10&` +
+      `maxResults=15&` +
       `order=relevance&` +
-      `videoDuration=medium&` +
       `safeSearch=strict&` +
       `relevanceLanguage=en`;
 
     try {
       const searchResponse = await fetch(searchUrl);
+      const responseText = await searchResponse.text();
+      
       if (searchResponse.ok) {
-        const searchData = await searchResponse.json();
-        allVideos.push(...searchData.items);
+        const searchData = JSON.parse(responseText);
+        if (searchData.items && searchData.items.length > 0) {
+          allVideos.push(...searchData.items);
+        }
+      } else {
+        console.error(`YouTube API error for query "${searchQuery}":`, searchResponse.status, responseText);
       }
     } catch (error) {
       console.error(`Search query failed: ${searchQuery}`, error);
@@ -140,11 +145,14 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
     `part=snippet,contentDetails,statistics`;
 
   const detailsResponse = await fetch(detailsUrl);
+  const detailsResponseText = await detailsResponse.text();
+  
   if (!detailsResponse.ok) {
+    console.error(`YouTube API details error:`, detailsResponse.status, detailsResponseText);
     throw new Error(`YouTube API details failed: ${detailsResponse.statusText}`);
   }
 
-  const detailsData = await detailsResponse.json();
+  const detailsData = JSON.parse(detailsResponseText);
   
   // Process videos and filter by duration
   const processedVideos = detailsData.items
