@@ -1,0 +1,113 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ExternalLink, Play } from "lucide-react";
+import type { Video } from "@shared/schema";
+
+interface VideoCardProps {
+  video: Video;
+  stepNumber: number;
+  onPlay: (video: Video) => void;
+}
+
+const LEVEL_COLORS = {
+  beginner: "from-green-400 to-green-500",
+  intermediate: "from-blue-400 to-blue-500",
+  advanced: "from-purple-400 to-purple-500",
+};
+
+const LEVEL_LABELS = {
+  beginner: "Step 1: Beginner",
+  intermediate: "Step 2: Intermediate", 
+  advanced: "Step 3: Advanced",
+};
+
+function formatDuration(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+export function VideoCard({ video, stepNumber, onPlay }: VideoCardProps) {
+  const level = video.level as keyof typeof LEVEL_COLORS;
+  const colorClass = LEVEL_COLORS[level] || LEVEL_COLORS.beginner;
+  const levelLabel = LEVEL_LABELS[level] || `Step ${stepNumber}`;
+
+  const handlePlayClick = () => {
+    onPlay(video);
+  };
+
+  const handleYouTubeClick = () => {
+    window.open(`https://www.youtube.com/watch?v=${video.youtubeId}`, '_blank');
+  };
+
+  return (
+    <Card className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+      <div className="relative">
+        <div className="aspect-video bg-slate-200 relative overflow-hidden">
+          <img
+            src={video.thumbnailUrl || ''}
+            alt={video.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+            <Button
+              onClick={handlePlayClick}
+              size="lg"
+              className="bg-white/90 hover:bg-white text-slate-900 rounded-full p-4 shadow-lg"
+            >
+              <Play className="h-6 w-6 ml-1" />
+            </Button>
+          </div>
+        </div>
+        <div className="absolute top-4 left-4">
+          <span className={`bg-gradient-to-r ${colorClass} text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg`}>
+            {levelLabel}
+          </span>
+        </div>
+        {video.duration && (
+          <div className="absolute top-4 right-4">
+            <span className="bg-black/70 text-white px-2 py-1 rounded text-xs font-medium">
+              {formatDuration(video.duration)}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <CardContent className="p-6">
+        <h4 className="text-xl font-semibold text-slate-900 mb-3 line-clamp-2">
+          {video.title}
+        </h4>
+        <p className="text-slate-600 text-sm mb-4 line-clamp-3">
+          {video.description}
+        </p>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-sm text-slate-500">
+            <svg className="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+            <span>{video.channelName}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              onClick={handlePlayClick}
+              size="sm"
+              className="bg-primary hover:bg-primary/90 text-white"
+            >
+              <Play className="h-4 w-4 mr-1" />
+              Play
+            </Button>
+            <Button
+              onClick={handleYouTubeClick}
+              variant="ghost"
+              size="sm"
+              className="text-slate-400 hover:text-primary"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
