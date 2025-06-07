@@ -164,69 +164,104 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
     })
     .filter((video: any) => video.durationSeconds >= 300 && video.durationSeconds <= 1200); // 5-20 minutes
 
-  // Strict relevance filtering for topic accuracy
-  const scoredVideos = processedVideos.map(video => {
-    const title = video.title.toLowerCase();
-    const description = video.description.toLowerCase();
-    const channelName = video.channelName.toLowerCase();
-    const topicLower = query.toLowerCase();
-    
-    let score = 0;
-    const topicWords = topicLower.split(' ').filter(word => word.length > 2);
-    
-    // Strict requirement: ALL major topic words must appear in title or description
-    let hasAllKeywords = true;
-    for (const word of topicWords) {
-      if (!title.includes(word) && !description.includes(word)) {
-        hasAllKeywords = false;
-        break;
-      }
-    }
-    
-    if (!hasAllKeywords) {
-      return {
-        ...video,
-        relevanceScore: 0,
-        relevanceReasoning: "Missing key topic words"
-      };
-    }
-    
-    // Score based on exact topic matches
-    for (const word of topicWords) {
-      if (title.includes(word)) score += 0.6;
-      if (description.includes(word)) score += 0.3;
-    }
-    
-    // Check for exact phrase match (highest score)
-    if (title.includes(topicLower) || description.includes(topicLower)) {
-      score += 1.0;
-    }
-    
-    // Bonus for educational content
-    const educationalKeywords = ['history', 'documentary', 'explained', 'tutorial', 'guide', 'introduction', 'overview'];
-    for (const keyword of educationalKeywords) {
-      if (title.includes(keyword)) score += 0.4;
-    }
-    
-    // Heavy penalty for clearly unrelated content
-    const unrelatedKeywords = ['song', 'music', 'funny', 'prank', 'reaction', 'vlog', 'gaming', 'stocks', 'investment', 'mahjong'];
-    for (const keyword of unrelatedKeywords) {
-      if (title.includes(keyword) || description.includes(keyword)) {
-        score = 0;
-        break;
-      }
-    }
-    
-    return {
-      ...video,
-      relevanceScore: Math.max(0, Math.min(2, score)),
-      relevanceReasoning: "Strict topic matching"
-    };
-  });
+  // AI-powered relevance filtering for maximum accuracy
+  const scoredVideos = [];
+  
+  if (OPENAI_API_KEY && processedVideos.length > 0) {
+    try {
+      // Process videos with AI for precise relevance scoring
+      for (const video of processedVideos.slice(0, 12)) {
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+          messages: [
+            {
+              role: "system",
+              content: "You are an expert at determining if educational videos match specific learning topics. Rate the relevance on a scale of 0.0 to 1.0 where 1.0 means the video is directly about the exact topic and 0.0 means completely unrelated. Be very strict - only rate 0.8+ if the video is specifically about the requested topic. Respond with JSON: { \"score\": number, \"reasoning\": \"brief explanation\" }"
+            },
+            {
+              role: "user",
+              content: `Topic: "${query}"
+              
+Video Title: "${video.title}"
+Video Description: "${video.description?.substring(0, 400) || 'No description'}"
 
-  // Only return highly relevant videos
+Rate how relevant this video is to learning specifically about "${query}". Be strict - Singapore history is NOT Malaysia history, aviation mysteries are NOT history, etc.`
+            }
+          ],
+          response_format: { type: "json_object" },
+          max_tokens: 150
+        });
+
+        const result = JSON.parse(response.choices[0].message.content || '{"score": 0, "reasoning": "No response"}');
+        scoredVideos.push({
+          ...video,
+          relevanceScore: Math.max(0, Math.min(1, result.score)),
+          relevanceReasoning: result.reasoning || "AI analysis"
+        });
+      }
+    } catch (error) {
+      console.error("AI relevance scoring failed:", error);
+      // Fallback to enhanced keyword matching
+      for (const video of processedVideos.slice(0, 12)) {
+        const title = video.title.toLowerCase();
+        const description = video.description.toLowerCase();
+        const topicLower = query.toLowerCase();
+        
+        let score = 0;
+        const topicWords = topicLower.split(' ').filter(word => word.length > 2);
+        
+        // All words must be present
+        let hasAllKeywords = true;
+        for (const word of topicWords) {
+          if (!title.includes(word) && !description.includes(word)) {
+            hasAllKeywords = false;
+            break;
+          }
+        }
+        
+        if (hasAllKeywords) {
+          if (title.includes(topicLower)) score += 0.9;
+          for (const word of topicWords) {
+            if (title.includes(word)) score += 0.3;
+          }
+        }
+        
+        scoredVideos.push({
+          ...video,
+          relevanceScore: score,
+          relevanceReasoning: "Enhanced keyword matching"
+        });
+      }
+    }
+  } else {
+    // Fallback without AI
+    for (const video of processedVideos.slice(0, 12)) {
+      const title = video.title.toLowerCase();
+      const description = video.description.toLowerCase();
+      const topicLower = query.toLowerCase();
+      
+      let score = 0;
+      if (title.includes(topicLower)) score = 0.9;
+      else {
+        const topicWords = topicLower.split(' ').filter(word => word.length > 2);
+        let matchCount = 0;
+        for (const word of topicWords) {
+          if (title.includes(word)) matchCount++;
+        }
+        score = topicWords.length > 0 ? matchCount / topicWords.length * 0.7 : 0;
+      }
+      
+      scoredVideos.push({
+        ...video,
+        relevanceScore: score,
+        relevanceReasoning: "Basic keyword matching"
+      });
+    }
+  }
+
+  // Only return videos with high AI-confirmed relevance
   return scoredVideos
-    .filter(video => video.relevanceScore >= 0.8) // Much stricter threshold
+    .filter(video => video.relevanceScore >= 0.7) // High threshold for AI-scored content
     .sort((a, b) => {
       // Primary sort: relevance score
       if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.1) {
@@ -235,7 +270,7 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
       // Secondary sort: view count for similar relevance
       return b.viewCount - a.viewCount;
     })
-    .slice(0, 10); // Return top 10 most relevant videos
+    .slice(0, 8); // Return top 8 most relevant videos
 }
 
 // Simple learning path optimization without AI for speed
