@@ -90,13 +90,33 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
 
 
 
-  // Create multiple specific search queries to ensure topic relevance
-  const searchQueries = [
-    `${query} tutorial beginner explained`,
-    `${query} guide introduction basics`,
-    `learn ${query} step by step`,
-    `${query} fundamentals course`
-  ];
+  // Create targeted search queries based on topic type
+  let searchQueries: string[];
+  
+  if (query.toLowerCase().includes('history')) {
+    searchQueries = [
+      `${query} documentary explained`,
+      `${query} timeline events`,
+      `${query} educational overview`,
+      `${query} historical facts`
+    ];
+  } else if (query.toLowerCase().includes('marketing')) {
+    searchQueries = [
+      `${query} tutorial beginner`,
+      `${query} strategy guide`,
+      `${query} course introduction`,
+      `${query} basics explained`
+    ];
+  } else {
+    searchQueries = [
+      `${query} tutorial beginner explained`,
+      `${query} guide introduction basics`,
+      `learn ${query} step by step`,
+      `${query} fundamentals course`
+    ];
+  }
+  
+  console.log(`Searching YouTube for: "${query}" with targeted queries:`, searchQueries);
 
   let allVideos: any[] = [];
 
@@ -187,32 +207,40 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
         `${i + 1}. Title: "${video.title}"\nDescription: "${video.description?.substring(0, 200) || 'No description'}"\n`
       ).join('\n');
 
+      console.log(`AI scoring videos for topic: "${query}"`);
+      console.log("Video titles being scored:", videosToProcess.map(v => v.title));
+
       const response = await openai.chat.completions.create({
         model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: [
           {
             role: "system",
-            content: "Rate each video's relevance to the learning topic on a scale of 0.0 to 1.0. Be very strict - only rate 0.8+ if specifically about the exact topic. Respond with JSON: { \"scores\": [0.9, 0.2, 0.8, ...], \"reasoning\": [\"reason1\", \"reason2\", ...] }"
+            content: "You are an expert educational content curator. Rate each video's relevance to the specific learning topic on a scale of 0.0 to 1.0. Be EXTREMELY strict - only rate 0.8+ if the video is specifically about the exact topic and suitable for learning. Rate 0.0-0.3 for completely unrelated content. Respond with JSON: { \"scores\": [0.9, 0.0, 0.8, ...], \"reasoning\": [\"reason1\", \"reason2\", ...] }"
           },
           {
             role: "user",
-            content: `Topic: "${query}"\n\nVideos:\n${videoDescriptions}\n\nRate relevance for learning specifically about "${query}". Be strict - Singapore history ≠ Malaysia history, mysteries ≠ history.`
+            content: `Topic: "${query}"\n\nVideos:\n${videoDescriptions}\n\nRate each video's relevance for learning about "${query}". Be extremely strict - credit scores are NOT related to Malaysia history, algebra is NOT related to history. Only high scores for videos actually about the topic.`
           }
         ],
         response_format: { type: "json_object" },
-        max_tokens: 300
+        max_tokens: 500
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{"scores": [], "reasoning": []}');
       const scores = result.scores || [];
       const reasonings = result.reasoning || [];
       
+      console.log(`AI scores for "${query}":`, scores);
+      console.log(`AI reasoning:`, reasonings);
+      
       for (let i = 0; i < videosToProcess.length; i++) {
+        const score = Math.max(0, Math.min(1, scores[i] || 0.1));
         scoredVideos.push({
           ...videosToProcess[i],
-          relevanceScore: Math.max(0, Math.min(1, scores[i] || 0.5)),
+          relevanceScore: score,
           relevanceReasoning: reasonings[i] || "AI batch analysis"
         });
+        console.log(`Video "${videosToProcess[i].title}" scored: ${score}`);
       }
     } catch (error) {
       console.error("AI relevance scoring failed:", error);
@@ -274,9 +302,14 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
     }
   }
 
-  // Return videos with adaptive threshold
+  console.log(`Total scored videos: ${scoredVideos.length}`);
+  scoredVideos.forEach(video => {
+    console.log(`"${video.title}": ${video.relevanceScore}`);
+  });
+
+  // Use strict threshold - only highly relevant videos
   let filteredVideos = scoredVideos
-    .filter(video => video.relevanceScore >= 0.7)
+    .filter(video => video.relevanceScore >= 0.8)
     .sort((a, b) => {
       if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.1) {
         return b.relevanceScore - a.relevanceScore;
@@ -284,23 +317,32 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
       return b.viewCount - a.viewCount;
     });
 
-  // If not enough high-quality videos, lower the threshold
+  console.log(`High relevance videos (>=0.8): ${filteredVideos.length}`);
+
+  // If not enough high-quality videos, use medium threshold
   if (filteredVideos.length < 3) {
     filteredVideos = scoredVideos
-      .filter(video => video.relevanceScore >= 0.5)
+      .filter(video => video.relevanceScore >= 0.6)
       .sort((a, b) => {
         if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.1) {
           return b.relevanceScore - a.relevanceScore;
         }
         return b.viewCount - a.viewCount;
       });
+    console.log(`Medium relevance videos (>=0.6): ${filteredVideos.length}`);
   }
 
-  // Final fallback - return any videos with some relevance
+  // Final fallback - only accept moderately relevant content
   if (filteredVideos.length < 3) {
     filteredVideos = scoredVideos
-      .filter(video => video.relevanceScore >= 0.3)
-      .sort((a, b) => b.viewCount - a.viewCount);
+      .filter(video => video.relevanceScore >= 0.4)
+      .sort((a, b) => b.relevanceScore - a.relevanceScore);
+    console.log(`Low relevance videos (>=0.4): ${filteredVideos.length}`);
+  }
+
+  // If still no relevant videos, throw error
+  if (filteredVideos.length === 0) {
+    throw new Error(`No relevant videos found for "${query}". Please try a more specific search term.`);
   }
 
   return filteredVideos.slice(0, 8);
