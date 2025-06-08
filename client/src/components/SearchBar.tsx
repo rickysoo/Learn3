@@ -9,34 +9,38 @@ interface SearchBarProps {
 }
 
 const ALL_TOPICS = [
-  // Technology & Programming
-  "Web Development", "Python", "JavaScript", "Machine Learning", "Data Science",
-  "Cybersecurity", "Cloud Computing", "Mobile Apps", "React", "Node.js",
+  // Technology & Programming (specific skills)
+  "API Design", "CSS Flexbox", "Git Workflow", "JavaScript ES6", "Machine Learning", 
+  "Neural Networks", "Python Flask", "React Hooks", "REST APIs", "SQL Queries",
+  "Supervised Learning", "TypeScript", "Vue.js", "Web Security",
   
-  // Business & Professional
-  "Digital Marketing", "Project Management", "Public Speaking", "Leadership",
-  "Excel", "Sales", "Entrepreneurship", "Finance", "Negotiation",
+  // Business & Professional (specific skills)
+  "A/B Testing", "Brand Strategy", "Cold Calling", "Excel Pivot", "Financial Analysis",
+  "Google Analytics", "Market Research", "Negotiation", "PPC Advertising", "Sales Funnel",
+  "Scrum Master", "Supply Chain", "Team Leadership", "Time Blocking",
   
-  // Creative & Design
-  "Graphic Design", "Video Editing", "Photography", "UI Design", "Music Production",
-  "Animation", "Writing", "Social Media", "Photoshop", "Illustration",
+  // Creative & Design (specific techniques)
+  "Adobe Illustrator", "Color Theory", "Digital Drawing", "Film Editing", "Logo Design",
+  "Photography", "Photoshop", "Social Media", "Typography", "UI Prototyping",
+  "Video Editing", "Watercolor", "Web Animation",
   
-  // Personal Development
-  "Spanish", "French", "Communication", "Productivity", "Meditation",
-  "Time Management", "Memory", "Critical Thinking", "Goal Setting",
+  // Personal Development (specific skills)
+  "Active Listening", "Critical Thinking", "Goal Setting", "Habit Formation", "Memory Palace",
+  "Mindfulness", "Public Speaking", "Speed Reading", "Stress Management", "Time Management",
   
-  // Academic & Science
-  "Mathematics", "Physics", "Chemistry", "Biology", "Statistics",
-  "History", "Psychology", "Philosophy", "Economics", "Research"
+  // Academic & Science (specific topics)
+  "Algebra", "Cell Biology", "Chemistry Lab", "Data Analysis", "Economics 101",
+  "French Grammar", "Geometry", "History Timeline", "Physics Laws", "Psychology",
+  "Research Methods", "Spanish Verbs", "Statistics"
 ];
 
 export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
   const [query, setQuery] = useState("");
 
-  // Generate 6 random topics on each component mount
+  // Generate 8 random topics on each component mount, sorted alphabetically
   const randomTopics = useMemo(() => {
     const shuffled = [...ALL_TOPICS].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 6);
+    return shuffled.slice(0, 8).sort();
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
