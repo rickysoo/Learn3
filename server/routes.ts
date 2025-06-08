@@ -133,17 +133,22 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
   
   const searchData = JSON.parse(responseText);
   const allVideos = searchData.items || [];
+  
+  console.log(`YouTube returned ${allVideos.length} raw search results for "${query}"`);
 
   // Remove duplicates
   const uniqueResults = allVideos.filter((video, index, self) => 
     index === self.findIndex((v) => v.id.videoId === video.id.videoId)
   );
+  
+  console.log(`After deduplication: ${uniqueResults.length} unique videos`);
 
   if (uniqueResults.length === 0) {
     throw new Error(`No videos found for topic: ${query}`);
   }
 
   const videoIds = uniqueResults.slice(0, 15).map((item: any) => item.id.videoId).join(",");
+  console.log(`Fetching details for ${Math.min(15, uniqueResults.length)} videos`);
 
   // Get video details including duration
   const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?` +
@@ -162,7 +167,7 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
   const detailsData = JSON.parse(detailsResponseText);
   
   // Process videos and filter by duration
-  const processedVideos = detailsData.items
+  const allProcessedVideos = detailsData.items
     .map((item: any) => {
       const duration = parseDuration(item.contentDetails.duration);
       return {
@@ -176,8 +181,15 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
         durationSeconds: duration,
         viewCount: parseInt(item.statistics?.viewCount || "0"),
       };
-    })
-    .filter((video: any) => video.durationSeconds >= 300 && video.durationSeconds <= 1200); // 5-20 minutes
+    });
+    
+  console.log(`Processed ${allProcessedVideos.length} videos with duration data`);
+  
+  const processedVideos = allProcessedVideos.filter((video: any) => 
+    video.durationSeconds >= 180 && video.durationSeconds <= 1800 // 3-30 minutes
+  );
+  
+  console.log(`After duration filtering (3-30 min): ${processedVideos.length} videos remaining`);
 
   // AI-powered relevance filtering for maximum accuracy
   const scoredVideos = [];
@@ -185,7 +197,7 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
   if (OPENAI_API_KEY && processedVideos.length > 0) {
     try {
       // Batch process videos with AI for faster processing
-      const batchSize = 6; // Process in smaller batches for speed
+      const batchSize = 12; // Process more videos for better selection
       const videosToProcess = processedVideos.slice(0, batchSize);
       
       const videoDescriptions = videosToProcess.map((video: any, i: number) => 
