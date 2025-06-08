@@ -180,7 +180,7 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
         `q=${encodeURIComponent(query)}&` +
         `part=snippet&` +
         `type=video&` +
-        `maxResults=5&` +
+        `maxResults=15&` +
         `order=relevance&` +
         `safeSearch=strict&` +
         `relevanceLanguage=en`;
@@ -257,8 +257,8 @@ async function processYouTubeResults(allVideos: any[], apiKey: string, query: st
     throw new Error(`No videos found for topic: ${query}`);
   }
 
-  const videoIds = uniqueResults.slice(0, 5).map((item: any) => item.id.videoId).join(",");
-  console.log(`Fetching details for ${Math.min(5, uniqueResults.length)} videos`);
+  const videoIds = uniqueResults.slice(0, 10).map((item: any) => item.id.videoId).join(",");
+  console.log(`Fetching details for ${Math.min(10, uniqueResults.length)} videos`);
 
   // Get video details including duration (use same API key for consistency)
   const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?` +
@@ -297,10 +297,10 @@ async function processYouTubeResults(allVideos: any[], apiKey: string, query: st
   console.log(`Processed ${allProcessedVideos.length} videos with duration data`);
   
   const processedVideos = allProcessedVideos.filter((video: any) => 
-    video.durationSeconds >= 180 && video.durationSeconds <= 1800 // 3-30 minutes
+    video.durationSeconds >= 120 && video.durationSeconds <= 3600 // 2-60 minutes
   );
   
-  console.log(`After duration filtering (3-30 min): ${processedVideos.length} videos remaining`);
+  console.log(`After duration filtering (2-60 min): ${processedVideos.length} videos remaining`);
 
   // AI-powered relevance filtering for maximum accuracy
   const scoredVideos = [];
