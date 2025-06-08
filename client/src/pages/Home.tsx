@@ -151,7 +151,7 @@ export default function Home() {
                 <h3 className="text-3xl font-bold text-slate-900 mb-4">
                   Learning Path: <span className="text-primary">{currentQuery}</span>
                 </h3>
-                <p className="text-slate-600">Here's your personalized 3-step learning journey</p>
+                <p className="text-slate-600">Here's your personalized 3-level learning journey</p>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -159,7 +159,7 @@ export default function Home() {
                   <VideoCard
                     key={video.id}
                     video={video}
-                    stepNumber={index + 1}
+                    levelNumber={index + 1}
                     onPlay={handlePlayVideo}
                   />
                 ))}

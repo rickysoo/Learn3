@@ -551,7 +551,7 @@ async function generateLearningPath(videos: YouTubeVideo[], query: string) {
   const optimizedVideos = await optimizeLearningPath(videos, query);
 
   // Assign appropriate levels and enhance descriptions
-  const levels = ["beginner", "intermediate", "advanced"];
+  const levels = ["level 1", "level 2", "level 3"];
   const levelDescriptions = [
     `Perfect introduction to ${query} fundamentals`,
     `Building on ${query} basics with deeper concepts`,

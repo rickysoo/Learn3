@@ -38,11 +38,11 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
         <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
           Master Any Topic in{" "}
           <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            3 Simple Steps
+            3 Simple Levels
           </span>
         </h2>
         <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">
-          Enter any subject and get a curated learning path with beginner, intermediate, and advanced videos that build upon each other.
+          Enter any subject and get a curated learning path with Level 1, Level 2, and Level 3 videos that build upon each other.
         </p>
 
         <form onSubmit={handleSubmit} className="relative max-w-2xl mx-auto">

@@ -5,20 +5,20 @@ import type { Video } from "@shared/schema";
 
 interface VideoCardProps {
   video: Video;
-  stepNumber: number;
+  levelNumber: number;
   onPlay: (video: Video) => void;
 }
 
 const LEVEL_COLORS = {
-  beginner: "from-green-400 to-green-500",
-  intermediate: "from-blue-400 to-blue-500",
-  advanced: "from-purple-400 to-purple-500",
+  "level 1": "from-green-400 to-green-500",
+  "level 2": "from-blue-400 to-blue-500",
+  "level 3": "from-purple-400 to-purple-500",
 };
 
 const LEVEL_LABELS = {
-  beginner: "Step 1: Beginner",
-  intermediate: "Step 2: Intermediate", 
-  advanced: "Step 3: Advanced",
+  "level 1": "Level 1",
+  "level 2": "Level 2", 
+  "level 3": "Level 3",
 };
 
 function formatDuration(seconds: number): string {
@@ -27,10 +27,10 @@ function formatDuration(seconds: number): string {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
-export function VideoCard({ video, stepNumber, onPlay }: VideoCardProps) {
+export function VideoCard({ video, levelNumber, onPlay }: VideoCardProps) {
   const level = video.level as keyof typeof LEVEL_COLORS;
-  const colorClass = LEVEL_COLORS[level] || LEVEL_COLORS.beginner;
-  const levelLabel = LEVEL_LABELS[level] || `Step ${stepNumber}`;
+  const colorClass = LEVEL_COLORS[level] || LEVEL_COLORS["level 1"];
+  const levelLabel = LEVEL_LABELS[level] || `Level ${levelNumber}`;
 
   const handlePlayClick = () => {
     onPlay(video);
