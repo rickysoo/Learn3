@@ -71,13 +71,15 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white">
-                  <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z" fill="currentColor" stroke="currentColor" strokeWidth="1" strokeLinejoin="round"/>
-                  <circle cx="12" cy="12" r="3" fill="rgba(255,255,255,0.3)"/>
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 via-cyan-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white font-bold">
+                  <text x="12" y="16" fontSize="14" textAnchor="middle" fill="currentColor" fontWeight="bold">L3</text>
+                  <circle cx="6" cy="6" r="2" fill="rgba(255,255,255,0.8)"/>
+                  <circle cx="12" cy="6" r="2" fill="rgba(255,255,255,0.6)"/>
+                  <circle cx="18" cy="6" r="2" fill="rgba(255,255,255,0.4)"/>
                 </svg>
               </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">LevelUp</h1>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">Learn3</h1>
             </div>
 
           </div>
@@ -182,13 +184,15 @@ export default function Home() {
       <footer className="bg-slate-900 text-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white">
-                <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z" fill="currentColor" stroke="currentColor" strokeWidth="1" strokeLinejoin="round"/>
-                <circle cx="12" cy="12" r="3" fill="rgba(255,255,255,0.3)"/>
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 via-cyan-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white font-bold">
+                <text x="12" y="16" fontSize="14" textAnchor="middle" fill="currentColor" fontWeight="bold">L3</text>
+                <circle cx="6" cy="6" r="2" fill="rgba(255,255,255,0.8)"/>
+                <circle cx="12" cy="6" r="2" fill="rgba(255,255,255,0.6)"/>
+                <circle cx="18" cy="6" r="2" fill="rgba(255,255,255,0.4)"/>
               </svg>
             </div>
-            <h1 className="text-xl font-bold text-white">LevelUp</h1>
+            <h1 className="text-xl font-bold text-white">Learn3</h1>
           </div>
           <p className="text-slate-400">
             Transform your learning journey with curated video paths
