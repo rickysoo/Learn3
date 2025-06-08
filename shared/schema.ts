@@ -12,6 +12,8 @@ export const videos = pgTable("videos", {
   thumbnailUrl: text("thumbnail_url"),
   level: varchar("level", { length: 50 }), // "beginner", "intermediate", "advanced"
   topic: text("topic"),
+  relevanceScore: integer("relevance_score"), // 0-100 for display (0.0-1.0 * 100)
+  difficultyScore: integer("difficulty_score"), // 1-3 (beginner, intermediate, advanced)
 });
 
 export const insertVideoSchema = createInsertSchema(videos).omit({

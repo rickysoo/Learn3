@@ -81,6 +81,35 @@ export function VideoCard({ video, stepNumber, onPlay }: VideoCardProps) {
           {video.description}
         </p>
 
+        {/* Debugging Scores - User Friendly Display */}
+        <div className="flex items-center gap-3 mb-4 text-xs">
+          {video.relevanceScore && (
+            <div className="flex items-center gap-1">
+              <span className="text-slate-500">Topic Match:</span>
+              <span className={`px-2 py-1 rounded-full font-medium ${
+                video.relevanceScore >= 90 ? 'bg-green-100 text-green-700' :
+                video.relevanceScore >= 80 ? 'bg-blue-100 text-blue-700' :
+                'bg-yellow-100 text-yellow-700'
+              }`}>
+                {video.relevanceScore}%
+              </span>
+            </div>
+          )}
+          {video.difficultyScore && (
+            <div className="flex items-center gap-1">
+              <span className="text-slate-500">Level:</span>
+              <span className={`px-2 py-1 rounded-full font-medium ${
+                video.difficultyScore === 1 ? 'bg-green-100 text-green-700' :
+                video.difficultyScore === 2 ? 'bg-blue-100 text-blue-700' :
+                'bg-purple-100 text-purple-700'
+              }`}>
+                {video.difficultyScore === 1 ? 'Beginner' : 
+                 video.difficultyScore === 2 ? 'Intermediate' : 'Advanced'}
+              </span>
+            </div>
+          )}
+        </div>
+
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 text-sm text-slate-500">
             <svg className="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor">

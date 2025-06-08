@@ -50,7 +50,7 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
             <div className="flex-1 relative">
               <Input
                 type="text"
-                placeholder="Enter a topic (e.g., quantum computing, climate change, marketing funnels)"
+                placeholder="Enter any topic"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full px-6 py-4 text-lg border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
