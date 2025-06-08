@@ -36,6 +36,7 @@ export interface YouTubeVideo {
   relevanceScore?: number;
   relevanceReasoning?: string;
   viewCount?: number;
+  recencyScore?: number;
 }
 
 export interface VideoSearchResult {

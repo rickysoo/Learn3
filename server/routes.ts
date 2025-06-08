@@ -142,6 +142,21 @@ Rate this video's relevance to learning about "${topic}".`
   }
 }
 
+// Calculate recency score based on video publish date
+function calculateRecencyScore(publishedAt: string): number {
+  const publishDate = new Date(publishedAt);
+  const now = new Date();
+  const daysDiff = Math.floor((now.getTime() - publishDate.getTime()) / (1000 * 60 * 60 * 24));
+  
+  // Videos published within 30 days get full score (1.0)
+  // Videos older than 2 years get minimum score (0.1)
+  if (daysDiff <= 30) return 1.0;
+  if (daysDiff >= 730) return 0.1;
+  
+  // Linear decay between 30 days and 2 years
+  return Math.max(0.1, 1.0 - (daysDiff - 30) / 700 * 0.9);
+}
+
 // Enhanced YouTube search with automatic API key failover
 async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
   console.log(`Searching YouTube for: "${query}"`);
@@ -275,6 +290,7 @@ async function processYouTubeResults(allVideos: any[], apiKey: string, query: st
         publishedAt: item.snippet.publishedAt,
         durationSeconds: duration,
         viewCount: parseInt(item.statistics?.viewCount || "0"),
+        recencyScore: calculateRecencyScore(item.snippet.publishedAt),
       };
     });
     
@@ -399,27 +415,35 @@ async function processYouTubeResults(allVideos: any[], apiKey: string, query: st
     console.log(`"${video.title}": ${video.relevanceScore}`);
   });
 
-  // Use strict threshold - only highly relevant videos
+  // Use strict threshold - only highly relevant videos with recency consideration
   let relevantVideos = scoredVideos
     .filter(video => video.relevanceScore >= 0.8)
     .sort((a, b) => {
-      if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.1) {
-        return b.relevanceScore - a.relevanceScore;
+      // Calculate composite score: relevance (60%) + recency (25%) + views (15%)
+      const scoreA = (a.relevanceScore * 0.6) + (a.recencyScore * 0.25) + (Math.min(a.viewCount / 1000000, 1) * 0.15);
+      const scoreB = (b.relevanceScore * 0.6) + (b.recencyScore * 0.25) + (Math.min(b.viewCount / 1000000, 1) * 0.15);
+      
+      if (Math.abs(scoreA - scoreB) > 0.05) {
+        return scoreB - scoreA;
       }
-      return b.viewCount - a.viewCount;
+      return b.recencyScore - a.recencyScore; // Prefer more recent as tiebreaker
     });
 
   console.log(`High relevance videos (>=0.8): ${relevantVideos.length}`);
 
-  // If not enough high-quality videos, use medium threshold
+  // If not enough high-quality videos, use medium threshold with recency
   if (relevantVideos.length < 3) {
     relevantVideos = scoredVideos
       .filter(video => video.relevanceScore >= 0.6)
       .sort((a, b) => {
-        if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.1) {
-          return b.relevanceScore - a.relevanceScore;
+        // Calculate composite score: relevance (60%) + recency (25%) + views (15%)
+        const scoreA = (a.relevanceScore * 0.6) + (a.recencyScore * 0.25) + (Math.min(a.viewCount / 1000000, 1) * 0.15);
+        const scoreB = (b.relevanceScore * 0.6) + (b.recencyScore * 0.25) + (Math.min(b.viewCount / 1000000, 1) * 0.15);
+        
+        if (Math.abs(scoreA - scoreB) > 0.05) {
+          return scoreB - scoreA;
         }
-        return b.viewCount - a.viewCount;
+        return b.recencyScore - a.recencyScore; // Prefer more recent as tiebreaker
       });
     console.log(`Medium relevance videos (>=0.6): ${relevantVideos.length}`);
   }
