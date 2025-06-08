@@ -97,13 +97,13 @@ export function VideoCard({ video, stepNumber, onPlay }: VideoCardProps) {
           )}
           {video.difficultyScore && (
             <div className="flex items-center gap-1">
-              <span className="text-slate-500">Level:</span>
+              <span className="text-slate-500">Difficulty:</span>
               <span className={`px-2 py-1 rounded-full font-medium ${
                 video.difficultyScore === 1 ? 'bg-green-100 text-green-700' :
                 video.difficultyScore === 2 ? 'bg-blue-100 text-blue-700' :
                 'bg-purple-100 text-purple-700'
               }`}>
-                {Math.round((video.difficultyScore / 3) * 100)}%
+                {(video.difficultyScore / 3).toFixed(2)}
               </span>
             </div>
           )}
