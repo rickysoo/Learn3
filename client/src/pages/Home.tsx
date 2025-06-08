@@ -92,7 +92,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h3 className="text-2xl font-bold text-slate-900 mb-4">Your Learning Journey</h3>
-            <p className="text-slate-600">Follow our structured 3-step approach to build foundational understanding</p>
+            <p className="text-slate-600">Follow our structured 3-level approach to build foundational understanding</p>
           </div>
           
           <div className="flex flex-col lg:flex-row justify-center items-center lg:items-start space-y-8 lg:space-y-0 lg:space-x-8 mb-16">
@@ -101,7 +101,7 @@ export default function Home() {
               <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
                 <span className="text-white font-bold text-xl">1</span>
               </div>
-              <h4 className="text-lg font-semibold text-slate-900 mb-2">Beginner</h4>
+              <h4 className="text-lg font-semibold text-slate-900 mb-2">Level 1</h4>
               <p className="text-slate-600 text-sm">Start with fundamentals and core concepts</p>
             </div>
             
@@ -117,7 +117,7 @@ export default function Home() {
               <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
                 <span className="text-white font-bold text-xl">2</span>
               </div>
-              <h4 className="text-lg font-semibold text-slate-900 mb-2">Intermediate</h4>
+              <h4 className="text-lg font-semibold text-slate-900 mb-2">Level 2</h4>
               <p className="text-slate-600 text-sm">Build upon basics with practical applications</p>
             </div>
             
@@ -133,7 +133,7 @@ export default function Home() {
               <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-purple-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
                 <span className="text-white font-bold text-xl">3</span>
               </div>
-              <h4 className="text-lg font-semibold text-slate-900 mb-2">Advanced</h4>
+              <h4 className="text-lg font-semibold text-slate-900 mb-2">Level 3</h4>
               <p className="text-slate-600 text-sm">Deep dive into complex topics and mastery</p>
             </div>
           </div>
