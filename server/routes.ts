@@ -5,7 +5,34 @@ import { z } from "zod";
 import type { YouTubeVideo, VideoSearchResult } from "@shared/schema";
 import OpenAI from "openai";
 
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || process.env.VITE_YOUTUBE_API_KEY || "";
+// YouTube API key rotation system
+const YOUTUBE_API_KEYS = [
+  process.env.YOUTUBE_API_KEY_1,
+  process.env.YOUTUBE_API_KEY_2,
+  process.env.YOUTUBE_API_KEY_3,
+  process.env.YOUTUBE_API_KEY_4,
+  process.env.YOUTUBE_API_KEY,
+  process.env.VITE_YOUTUBE_API_KEY
+].filter((key): key is string => Boolean(key));
+
+let currentKeyIndex = 0;
+
+function getNextYouTubeAPIKey(): string {
+  if (YOUTUBE_API_KEYS.length === 0) {
+    throw new Error("No YouTube API keys configured");
+  }
+  
+  const key = YOUTUBE_API_KEYS[currentKeyIndex];
+  if (!key) {
+    throw new Error("Invalid YouTube API key at index " + currentKeyIndex);
+  }
+  
+  currentKeyIndex = (currentKeyIndex + 1) % YOUTUBE_API_KEYS.length;
+  
+  console.log(`Using YouTube API key ${currentKeyIndex + 1}/${YOUTUBE_API_KEYS.length}`);
+  return key;
+}
+
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 
 // Initialize OpenAI
@@ -84,15 +111,13 @@ Rate this video's relevance to learning about "${topic}".`
 
 // Enhanced YouTube search with better targeting for all difficulty levels
 async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
-  if (!YOUTUBE_API_KEY) {
-    throw new Error("YouTube API key not configured");
-  }
+  const currentAPIKey = getNextYouTubeAPIKey();
 
   console.log(`Searching YouTube for: "${query}"`);
 
   // Single optimized search query to save API costs
   const searchUrl = `https://www.googleapis.com/youtube/v3/search?` +
-    `key=${YOUTUBE_API_KEY}&` +
+    `key=${currentAPIKey}&` +
     `q=${encodeURIComponent(query)}&` +
     `part=snippet&` +
     `type=video&` +
@@ -150,9 +175,9 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
   const videoIds = uniqueResults.slice(0, 15).map((item: any) => item.id.videoId).join(",");
   console.log(`Fetching details for ${Math.min(15, uniqueResults.length)} videos`);
 
-  // Get video details including duration
+  // Get video details including duration (use same API key for consistency)
   const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?` +
-    `key=${YOUTUBE_API_KEY}&` +
+    `key=${currentAPIKey}&` +
     `id=${videoIds}&` +
     `part=snippet,contentDetails,statistics`;
 
