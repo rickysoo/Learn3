@@ -36,13 +36,12 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
     <section className="bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 py-16 lg:py-24">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
-          Master Any Topic in{" "}
           <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            3 Simple Levels
+            Master Any Topic in 3 Levels
           </span>
         </h2>
         <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">
-          Enter any subject and get a curated learning path with Level 1, Level 2, and Level 3 videos that build upon each other.
+          Enter any subject and get a curated learning path with Level 1 to 3 videos for a solid understanding.
         </p>
 
         <form onSubmit={handleSubmit} className="relative max-w-2xl mx-auto">
