@@ -82,7 +82,7 @@ export function VideoCard({ video, levelNumber, onPlay }: VideoCardProps) {
         </p>
 
         {/* Debugging Scores - User Friendly Display */}
-        <div className="flex items-center gap-3 mb-4 text-xs">
+        <div className="flex items-center gap-2 mb-4 text-xs flex-wrap">
           {video.relevanceScore && (
             <div className="flex items-center gap-1">
               <span className="text-slate-500">Topic Match:</span>
@@ -104,6 +104,17 @@ export function VideoCard({ video, levelNumber, onPlay }: VideoCardProps) {
                 'bg-purple-100 text-purple-700'
               }`}>
                 {(video.difficultyScore / 3).toFixed(2)}
+              </span>
+            </div>
+          )}
+          {video.publishedAt && (
+            <div className="flex items-center gap-1">
+              <span className="text-slate-500">Published:</span>
+              <span className="px-2 py-1 rounded-full font-medium bg-slate-100 text-slate-700">
+                {new Date(video.publishedAt).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'short' 
+                })}
               </span>
             </div>
           )}
