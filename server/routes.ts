@@ -343,16 +343,16 @@ async function optimizeLearningPath(videos: any[], query: string): Promise<any[]
   }
 
   // Remove any duplicates by video ID first
-  const uniqueVideos = videos.filter((video, index, self) => 
+  const deduplicatedVideos = videos.filter((video, index, self) => 
     index === self.findIndex(v => v.id === video.id)
   );
 
   // AI-powered difficulty analysis for better categorization
   const categorizedVideos = [];
   
-  if (OPENAI_API_KEY && uniqueVideos.length > 0) {
+  if (OPENAI_API_KEY && deduplicatedVideos.length > 0) {
     try {
-      const videoDescriptions = uniqueVideos.map((video, i) => 
+      const videoDescriptions = deduplicatedVideos.map((video, i) => 
         `${i + 1}. Title: "${video.title}"\nDescription: "${video.description?.substring(0, 300) || 'No description'}"\nDuration: ${Math.floor(video.durationSeconds / 60)} minutes\nChannel: "${video.channelName}"\n`
       ).join('\n');
 
@@ -469,47 +469,27 @@ Respond with JSON: { "difficulties": [1, 2, 3, ...], "reasoning": ["reason1", "r
     console.log(`"${video.title}": difficulty ${video.difficultyScore}, relevance ${video.relevanceScore}`);
   });
 
-  // Select videos with proper difficulty progression
-  const selectedVideos = [];
+  // Select top 3 unique videos and arrange by difficulty progression
+  const topVideos = [];
+  const seenIds = new Set();
   
-  // Find best beginner video (difficulty 1)
-  const beginnerVideo = sortedVideos.find(v => v.difficultyScore === 1) || sortedVideos[0];
-  selectedVideos.push(beginnerVideo);
-  console.log(`Selected beginner: "${beginnerVideo.title}" (difficulty ${beginnerVideo.difficultyScore}) relevance: ${beginnerVideo.relevanceScore}`);
-  
-  // Find best intermediate video (difficulty 2, different from beginner)
-  const intermediateVideo = sortedVideos.find(v => 
-    v.difficultyScore === 2 && v.id !== beginnerVideo.id
-  ) || sortedVideos.find(v => v.id !== beginnerVideo.id) || sortedVideos[1];
-  if (intermediateVideo) {
-    selectedVideos.push(intermediateVideo);
-    console.log(`Selected intermediate: "${intermediateVideo.title}" (difficulty ${intermediateVideo.difficultyScore}) relevance: ${intermediateVideo.relevanceScore}`);
-  }
-  
-  // Find best advanced video (difficulty 3, different from others)
-  const advancedVideo = sortedVideos.find(v => 
-    v.difficultyScore === 3 && 
-    v.id !== beginnerVideo.id && 
-    v.id !== intermediateVideo?.id
-  ) || sortedVideos.find(v => 
-    v.id !== beginnerVideo.id && v.id !== intermediateVideo?.id
-  ) || sortedVideos[2];
-  if (advancedVideo) {
-    selectedVideos.push(advancedVideo);
-    console.log(`Selected advanced: "${advancedVideo.title}" (difficulty ${advancedVideo.difficultyScore}) relevance: ${advancedVideo.relevanceScore}`);
-  }
-
-  // Fill remaining slots with unique videos if needed
-  while (selectedVideos.length < 3 && selectedVideos.length < uniqueVideos.length) {
-    for (const video of sortedVideos) {
-      if (!selectedVideos.find(selected => selected.id === video.id)) {
-        selectedVideos.push(video);
-        break;
-      }
+  for (const video of sortedVideos) {
+    if (!seenIds.has(video.id) && topVideos.length < 3) {
+      topVideos.push(video);
+      seenIds.add(video.id);
     }
   }
+  
+  // Sort the selected 3 videos by difficulty (ascending) for proper progression
+  const selectedVideos = topVideos.sort((a, b) => a.difficultyScore - b.difficultyScore);
+  
+  console.log("Final video progression:");
+  selectedVideos.forEach((video, index) => {
+    const level = index === 0 ? "easiest" : index === 1 ? "medium" : "hardest";
+    console.log(`${level}: "${video.title}" (difficulty ${video.difficultyScore}) relevance: ${video.relevanceScore}`);
+  });
 
-  return selectedVideos.slice(0, 3);
+  return selectedVideos;
 }
 
 // Generate learning path with 3 sequential videos
