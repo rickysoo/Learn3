@@ -109,61 +109,87 @@ Rate this video's relevance to learning about "${topic}".`
   }
 }
 
-// Enhanced YouTube search with better targeting for all difficulty levels
+// Enhanced YouTube search with automatic API key failover
 async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
-  const currentAPIKey = getNextYouTubeAPIKey();
-
   console.log(`Searching YouTube for: "${query}"`);
 
-  // Single optimized search query to save API costs
-  const searchUrl = `https://www.googleapis.com/youtube/v3/search?` +
-    `key=${currentAPIKey}&` +
-    `q=${encodeURIComponent(query)}&` +
-    `part=snippet&` +
-    `type=video&` +
-    `maxResults=20&` +
-    `order=relevance&` +
-    `safeSearch=strict&` +
-    `relevanceLanguage=en`;
-
-  const searchResponse = await fetch(searchUrl);
-  const responseText = await searchResponse.text();
+  // Try each API key until one works or all fail
+  const maxAttempts = YOUTUBE_API_KEYS.length;
   
-  if (!searchResponse.ok) {
-    const errorText = responseText;
-    let errorMessage = "YouTube API is unavailable";
-    let errorType = "API_ERROR";
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const currentAPIKey = getNextYouTubeAPIKey();
     
-    if (searchResponse.status === 403) {
-      try {
-        const errorData = JSON.parse(errorText);
-        if (errorData.error?.errors?.[0]?.reason === "quotaExceeded") {
-          errorMessage = "We've reached our daily search limit! Please try again tomorrow when the quota resets (midnight Pacific Time).";
-          errorType = "DAILY_LIMIT_REACHED";
-        } else {
-          errorMessage = "YouTube API access denied. Please check your API key permissions.";
-          errorType = "ACCESS_DENIED";
-        }
-      } catch {
-        errorMessage = "YouTube API access forbidden. Please verify your API key.";
-        errorType = "ACCESS_DENIED";
+    try {
+      // Single optimized search query to save API costs
+      const searchUrl = `https://www.googleapis.com/youtube/v3/search?` +
+        `key=${currentAPIKey}&` +
+        `q=${encodeURIComponent(query)}&` +
+        `part=snippet&` +
+        `type=video&` +
+        `maxResults=20&` +
+        `order=relevance&` +
+        `safeSearch=strict&` +
+        `relevanceLanguage=en`;
+
+      const searchResponse = await fetch(searchUrl);
+      const responseText = await searchResponse.text();
+      
+      if (searchResponse.ok) {
+        // Success! Parse and return results
+        const searchData = JSON.parse(responseText);
+        const allVideos = searchData.items || [];
+        console.log(`YouTube returned ${allVideos.length} raw search results for "${query}"`);
+        
+        // Continue with the rest of the function logic...
+        return await processYouTubeResults(allVideos, currentAPIKey, query);
       }
-    } else if (searchResponse.status === 400) {
-      errorMessage = "YouTube API key is invalid or expired. Please provide a valid API key.";
-      errorType = "INVALID_KEY";
+      
+      // Handle quota exceeded - try next API key
+      if (searchResponse.status === 403) {
+        try {
+          const errorData = JSON.parse(responseText);
+          if (errorData.error?.errors?.[0]?.reason === "quotaExceeded") {
+            console.log(`API key ${attempt + 1}/${maxAttempts} quota exceeded, trying next key...`);
+            continue; // Try next API key
+          }
+        } catch {
+          // Error parsing response, treat as general error
+        }
+      }
+      
+      // For non-quota errors, throw immediately
+      let errorMessage = "YouTube API is unavailable";
+      let errorType = "API_ERROR";
+      
+      if (searchResponse.status === 403) {
+        errorMessage = "YouTube API access denied. Please check your API key permissions.";
+        errorType = "ACCESS_DENIED";
+      } else if (searchResponse.status === 400) {
+        errorMessage = "YouTube API key is invalid or expired. Please provide a valid API key.";
+        errorType = "INVALID_KEY";
+      }
+      
+      throw new Error(`${errorType}: ${errorMessage}`);
+      
+    } catch (error) {
+      // If it's a non-HTTP error, try next key for quota issues
+      if (attempt < maxAttempts - 1) {
+        console.log(`API key ${attempt + 1} failed, trying next key...`);
+        continue;
+      }
+      throw error; // Re-throw on last attempt
     }
-    
-    throw new Error(`${errorType}: ${errorMessage}`);
   }
   
-  const searchData = JSON.parse(responseText);
-  const allVideos = searchData.items || [];
-  
-  console.log(`YouTube returned ${allVideos.length} raw search results for "${query}"`);
+  // All API keys failed due to quota limits
+  throw new Error("DAILY_LIMIT_REACHED: All API keys have reached their daily quota limit. Please try again tomorrow when quotas reset.");
+}
 
+// Process YouTube API results with the successful API key
+async function processYouTubeResults(allVideos: any[], apiKey: string, query: string): Promise<YouTubeVideo[]> {
   // Remove duplicates
-  const uniqueResults = allVideos.filter((video, index, self) => 
-    index === self.findIndex((v) => v.id.videoId === video.id.videoId)
+  const uniqueResults = allVideos.filter((video: any, index: number, self: any[]) => 
+    index === self.findIndex((v: any) => v.id.videoId === video.id.videoId)
   );
   
   console.log(`After deduplication: ${uniqueResults.length} unique videos`);
@@ -177,7 +203,7 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
 
   // Get video details including duration (use same API key for consistency)
   const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?` +
-    `key=${currentAPIKey}&` +
+    `key=${apiKey}&` +
     `id=${videoIds}&` +
     `part=snippet,contentDetails,statistics`;
 
