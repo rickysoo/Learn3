@@ -499,7 +499,7 @@ Respond with JSON: { "difficulties": [1, 2, 3, ...], "reasoning": ["reason1", "r
   // Find best beginner video (difficulty 1)
   const beginnerVideo = sortedVideos.find(v => v.difficultyScore === 1) || sortedVideos[0];
   selectedVideos.push(beginnerVideo);
-  console.log(`Selected beginner: "${beginnerVideo.title}" (difficulty ${beginnerVideo.difficultyScore})`);
+  console.log(`Selected beginner: "${beginnerVideo.title}" (difficulty ${beginnerVideo.difficultyScore}) relevance: ${beginnerVideo.relevanceScore}`);
   
   // Find best intermediate video (difficulty 2, different from beginner)
   const intermediateVideo = sortedVideos.find(v => 
@@ -507,7 +507,7 @@ Respond with JSON: { "difficulties": [1, 2, 3, ...], "reasoning": ["reason1", "r
   ) || sortedVideos.find(v => v.id !== beginnerVideo.id) || sortedVideos[1];
   if (intermediateVideo) {
     selectedVideos.push(intermediateVideo);
-    console.log(`Selected intermediate: "${intermediateVideo.title}" (difficulty ${intermediateVideo.difficultyScore})`);
+    console.log(`Selected intermediate: "${intermediateVideo.title}" (difficulty ${intermediateVideo.difficultyScore}) relevance: ${intermediateVideo.relevanceScore}`);
   }
   
   // Find best advanced video (difficulty 3, different from others)
@@ -520,7 +520,7 @@ Respond with JSON: { "difficulties": [1, 2, 3, ...], "reasoning": ["reason1", "r
   ) || sortedVideos[2];
   if (advancedVideo) {
     selectedVideos.push(advancedVideo);
-    console.log(`Selected advanced: "${advancedVideo.title}" (difficulty ${advancedVideo.difficultyScore})`);
+    console.log(`Selected advanced: "${advancedVideo.title}" (difficulty ${advancedVideo.difficultyScore}) relevance: ${advancedVideo.relevanceScore}`);
   }
 
   // Fill remaining slots with unique videos if needed
@@ -553,18 +553,29 @@ async function generateLearningPath(videos: YouTubeVideo[], query: string) {
     `Advanced ${query} topics and comprehensive understanding`
   ];
 
-  return optimizedVideos.map((video: any, index: number) => ({
-    youtubeId: video.id,
-    title: video.title,
-    description: `${levelDescriptions[index]}. ${video.description?.substring(0, 200) || 'Educational content'}...`,
-    channelName: video.channelName,
-    duration: video.durationSeconds || 0,
-    thumbnailUrl: video.thumbnailUrl,
-    level: levels[index],
-    topic: query,
-    relevanceScore: Math.round((video.relevanceScore || 0) * 100), // Convert 0-1 to 0-100
-    difficultyScore: video.difficultyScore || 1,
-  }));
+  const finalVideos = optimizedVideos.map((video: any, index: number) => {
+    console.log(`Mapping video "${video.title}" with relevance: ${video.relevanceScore}, difficulty: ${video.difficultyScore}`);
+    return {
+      youtubeId: video.id,
+      title: video.title,
+      description: `${levelDescriptions[index]}. ${video.description?.substring(0, 200) || 'Educational content'}...`,
+      channelName: video.channelName,
+      duration: video.durationSeconds || 0,
+      thumbnailUrl: video.thumbnailUrl,
+      level: levels[index],
+      topic: query,
+      relevanceScore: Math.round((video.relevanceScore || 0) * 100), // Convert 0-1 to 0-100
+      difficultyScore: video.difficultyScore || 1,
+    };
+  });
+  
+  console.log("Final mapped videos with scores:", finalVideos.map(v => ({ 
+    title: v.title, 
+    relevanceScore: v.relevanceScore, 
+    difficultyScore: v.difficultyScore 
+  })));
+  
+  return finalVideos;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {

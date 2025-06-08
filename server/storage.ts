@@ -36,6 +36,8 @@ export class MemStorage implements IStorage {
         thumbnailUrl: insertVideo.thumbnailUrl || null,
         level: insertVideo.level || null,
         topic: insertVideo.topic || null,
+        relevanceScore: insertVideo.relevanceScore || null,
+        difficultyScore: insertVideo.difficultyScore || null,
       };
       this.videos.set(id, video);
       savedVideos.push(video);
