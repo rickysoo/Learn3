@@ -469,19 +469,31 @@ Respond with JSON: { "difficulties": [1, 2, 3, ...], "reasoning": ["reason1", "r
     console.log(`"${video.title}": difficulty ${video.difficultyScore}, relevance ${video.relevanceScore}`);
   });
 
-  // Select top 3 unique videos and arrange by difficulty progression
-  const topVideos = [];
+  // Select videos prioritizing difficulty diversity for proper progression
+  const selectedVideos = [];
   const seenIds = new Set();
   
+  // First pass: try to get one video from each difficulty level
+  for (let targetDifficulty = 1; targetDifficulty <= 3; targetDifficulty++) {
+    const videoAtLevel = sortedVideos.find(v => 
+      v.difficultyScore === targetDifficulty && !seenIds.has(v.id)
+    );
+    if (videoAtLevel && selectedVideos.length < 3) {
+      selectedVideos.push(videoAtLevel);
+      seenIds.add(videoAtLevel.id);
+    }
+  }
+  
+  // Second pass: fill remaining slots with best available videos
   for (const video of sortedVideos) {
-    if (!seenIds.has(video.id) && topVideos.length < 3) {
-      topVideos.push(video);
+    if (!seenIds.has(video.id) && selectedVideos.length < 3) {
+      selectedVideos.push(video);
       seenIds.add(video.id);
     }
   }
   
-  // Sort the selected 3 videos by difficulty (ascending) for proper progression
-  const selectedVideos = topVideos.sort((a, b) => a.difficultyScore - b.difficultyScore);
+  // Sort by difficulty for proper progression (easiest to hardest)
+  selectedVideos.sort((a, b) => a.difficultyScore - b.difficultyScore);
   
   console.log("Final video progression:");
   selectedVideos.forEach((video, index) => {
