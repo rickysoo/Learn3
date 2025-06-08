@@ -165,7 +165,7 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
         `q=${encodeURIComponent(query)}&` +
         `part=snippet&` +
         `type=video&` +
-        `maxResults=10&` +
+        `maxResults=5&` +
         `order=relevance&` +
         `safeSearch=strict&` +
         `relevanceLanguage=en`;
@@ -242,8 +242,8 @@ async function processYouTubeResults(allVideos: any[], apiKey: string, query: st
     throw new Error(`No videos found for topic: ${query}`);
   }
 
-  const videoIds = uniqueResults.slice(0, 8).map((item: any) => item.id.videoId).join(",");
-  console.log(`Fetching details for ${Math.min(8, uniqueResults.length)} videos`);
+  const videoIds = uniqueResults.slice(0, 5).map((item: any) => item.id.videoId).join(",");
+  console.log(`Fetching details for ${Math.min(5, uniqueResults.length)} videos`);
 
   // Get video details including duration (use same API key for consistency)
   const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?` +
