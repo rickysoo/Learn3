@@ -135,15 +135,15 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
   const allVideos = searchData.items || [];
 
   // Remove duplicates
-  const uniqueVideos = allVideos.filter((video, index, self) => 
+  const uniqueResults = allVideos.filter((video, index, self) => 
     index === self.findIndex((v) => v.id.videoId === video.id.videoId)
   );
 
-  if (uniqueVideos.length === 0) {
+  if (uniqueResults.length === 0) {
     throw new Error(`No videos found for topic: ${query}`);
   }
 
-  const videoIds = uniqueVideos.slice(0, 15).map((item: any) => item.id.videoId).join(",");
+  const videoIds = uniqueResults.slice(0, 15).map((item: any) => item.id.videoId).join(",");
 
   // Get video details including duration
   const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?` +
@@ -293,7 +293,7 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
   });
 
   // Use strict threshold - only highly relevant videos
-  let filteredVideos = scoredVideos
+  let relevantVideos = scoredVideos
     .filter(video => video.relevanceScore >= 0.8)
     .sort((a, b) => {
       if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.1) {
@@ -302,11 +302,11 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
       return b.viewCount - a.viewCount;
     });
 
-  console.log(`High relevance videos (>=0.8): ${filteredVideos.length}`);
+  console.log(`High relevance videos (>=0.8): ${relevantVideos.length}`);
 
   // If not enough high-quality videos, use medium threshold
-  if (filteredVideos.length < 3) {
-    filteredVideos = scoredVideos
+  if (relevantVideos.length < 3) {
+    relevantVideos = scoredVideos
       .filter(video => video.relevanceScore >= 0.6)
       .sort((a, b) => {
         if (Math.abs(a.relevanceScore - b.relevanceScore) > 0.1) {
@@ -314,18 +314,18 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
         }
         return b.viewCount - a.viewCount;
       });
-    console.log(`Medium relevance videos (>=0.6): ${filteredVideos.length}`);
+    console.log(`Medium relevance videos (>=0.6): ${relevantVideos.length}`);
   }
 
   // Final fallback - return the best available videos regardless of score
-  if (filteredVideos.length < 3) {
-    filteredVideos = scoredVideos
+  if (relevantVideos.length < 3) {
+    relevantVideos = scoredVideos
       .sort((a, b) => b.relevanceScore - a.relevanceScore)
       .slice(0, Math.max(3, Math.min(8, scoredVideos.length)));
-    console.log(`Using best available videos: ${filteredVideos.length}`);
+    console.log(`Using best available videos: ${relevantVideos.length}`);
   }
 
-  return filteredVideos.slice(0, 8);
+  return relevantVideos.slice(0, 8);
 }
 
 // Intelligent learning path optimization with difficulty progression
@@ -387,19 +387,19 @@ Respond with JSON: { "difficulties": [1, 2, 3, ...], "reasoning": ["reason1", "r
       console.log(`AI difficulty scores for "${query}":`, difficulties);
       console.log(`AI difficulty reasoning:`, reasonings);
       
-      for (let i = 0; i < uniqueVideos.length; i++) {
+      for (let i = 0; i < deduplicatedVideos.length; i++) {
         const difficultyScore = Math.max(1, Math.min(3, difficulties[i] || 1));
         categorizedVideos.push({
-          ...uniqueVideos[i],
+          ...deduplicatedVideos[i],
           difficultyScore,
           difficultyReasoning: reasonings[i] || "AI difficulty analysis"
         });
-        console.log(`Video "${uniqueVideos[i].title}" difficulty: ${difficultyScore}`);
+        console.log(`Video "${deduplicatedVideos[i].title}" difficulty: ${difficultyScore}`);
       }
     } catch (error) {
       console.error("AI difficulty analysis failed:", error);
       // Fallback to enhanced keyword-based analysis
-      for (const video of uniqueVideos) {
+      for (const video of deduplicatedVideos) {
         const title = video.title.toLowerCase();
         const description = video.description?.toLowerCase() || '';
         
@@ -433,7 +433,7 @@ Respond with JSON: { "difficulties": [1, 2, 3, ...], "reasoning": ["reason1", "r
     }
   } else {
     // Fallback when no OpenAI key
-    for (const video of uniqueVideos) {
+    for (const video of deduplicatedVideos) {
       const title = video.title.toLowerCase();
       const description = video.description?.toLowerCase() || '';
       
