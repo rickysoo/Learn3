@@ -210,7 +210,7 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
       const batchSize = 6; // Process in smaller batches for speed
       const videosToProcess = processedVideos.slice(0, batchSize);
       
-      const videoDescriptions = videosToProcess.map((video, i) => 
+      const videoDescriptions = videosToProcess.map((video: any, i: number) => 
         `${i + 1}. Title: "${video.title}"\nDescription: "${video.description?.substring(0, 200) || 'No description'}"\n`
       ).join('\n');
 
@@ -351,7 +351,7 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
 }
 
 // Intelligent learning path optimization with difficulty progression
-function optimizeLearningPath(videos: any[], query: string): any[] {
+async function optimizeLearningPath(videos: any[], query: string): Promise<any[]> {
   if (videos.length === 0) {
     return [];
   }
@@ -369,40 +369,113 @@ function optimizeLearningPath(videos: any[], query: string): any[] {
     index === self.findIndex(v => v.id === video.id)
   );
 
-  // Analyze and categorize videos by difficulty level
-  const categorizedVideos = uniqueVideos.map(video => {
-    const title = video.title.toLowerCase();
-    const description = video.description?.toLowerCase() || '';
-    
-    let difficultyScore = 0;
-    
-    // Beginner indicators (lower scores = beginner)
-    if (title.includes('beginner') || title.includes('intro') || title.includes('basic') || 
-        title.includes('start') || title.includes('first') || title.includes('lesson 1') ||
-        description.includes('beginner') || description.includes('introduction')) {
-      difficultyScore = 1;
+  // AI-powered difficulty analysis for better categorization
+  const categorizedVideos = [];
+  
+  if (OPENAI_API_KEY && uniqueVideos.length > 0) {
+    try {
+      const videoDescriptions = uniqueVideos.map((video, i) => 
+        `${i + 1}. Title: "${video.title}"\nDescription: "${video.description?.substring(0, 300) || 'No description'}"\nDuration: ${Math.floor(video.durationSeconds / 60)} minutes\nChannel: "${video.channelName}"\n`
+      ).join('\n');
+
+      console.log(`AI analyzing difficulty levels for topic: "${query}"`);
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert educational content analyst. Analyze each video's difficulty level for learning about a specific topic. Rate difficulty as:
+1 = Beginner (basic concepts, introductory, assumes no prior knowledge)
+2 = Intermediate (builds on basics, requires some foundation, practical application)
+3 = Advanced (complex concepts, assumes prior knowledge, deep dive, expert level)
+
+Consider: content complexity, assumed knowledge, technical depth, pace of delivery.
+Respond with JSON: { "difficulties": [1, 2, 3, ...], "reasoning": ["reason1", "reason2", ...] }`
+          },
+          {
+            role: "user",
+            content: `Topic: "${query}"\n\nVideos:\n${videoDescriptions}\n\nAnalyze the difficulty level of each video for learning about "${query}". Focus on educational progression from basic concepts to advanced understanding.`
+          }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 800
+      });
+
+      const result = JSON.parse(response.choices[0].message.content || '{"difficulties": [], "reasoning": []}');
+      const difficulties = result.difficulties || [];
+      const reasonings = result.reasoning || [];
+      
+      console.log(`AI difficulty scores for "${query}":`, difficulties);
+      console.log(`AI difficulty reasoning:`, reasonings);
+      
+      for (let i = 0; i < uniqueVideos.length; i++) {
+        const difficultyScore = Math.max(1, Math.min(3, difficulties[i] || 1));
+        categorizedVideos.push({
+          ...uniqueVideos[i],
+          difficultyScore,
+          difficultyReasoning: reasonings[i] || "AI difficulty analysis"
+        });
+        console.log(`Video "${uniqueVideos[i].title}" difficulty: ${difficultyScore}`);
+      }
+    } catch (error) {
+      console.error("AI difficulty analysis failed:", error);
+      // Fallback to enhanced keyword-based analysis
+      for (const video of uniqueVideos) {
+        const title = video.title.toLowerCase();
+        const description = video.description?.toLowerCase() || '';
+        
+        let difficultyScore = 1;
+        
+        // Advanced indicators get priority
+        if (title.includes('advanced') || title.includes('master') || title.includes('expert') ||
+            title.includes('complete') || title.includes('comprehensive') || title.includes('deep') ||
+            description.includes('advanced') || description.includes('comprehensive') ||
+            video.durationSeconds > 1800) {
+          difficultyScore = 3;
+        }
+        // Intermediate indicators
+        else if (title.includes('intermediate') || title.includes('guide') || title.includes('tutorial') ||
+                 title.includes('course') || title.includes('step by step') ||
+                 description.includes('building on') || description.includes('next level') ||
+                 video.durationSeconds > 900) {
+          difficultyScore = 2;
+        }
+        // Default to beginner for explicit beginner content or short videos
+        else {
+          difficultyScore = 1;
+        }
+        
+        categorizedVideos.push({
+          ...video,
+          difficultyScore,
+          difficultyReasoning: "Fallback keyword analysis"
+        });
+      }
     }
-    // Intermediate indicators
-    else if (title.includes('intermediate') || title.includes('guide') || title.includes('learn') ||
-             title.includes('tutorial') || title.includes('course') || title.includes('step by step') ||
-             description.includes('building on') || description.includes('next level')) {
-      difficultyScore = 2;
+  } else {
+    // Fallback when no OpenAI key
+    for (const video of uniqueVideos) {
+      const title = video.title.toLowerCase();
+      const description = video.description?.toLowerCase() || '';
+      
+      let difficultyScore = 1;
+      
+      if (title.includes('advanced') || title.includes('master') || title.includes('expert') ||
+          video.durationSeconds > 1800) {
+        difficultyScore = 3;
+      } else if (title.includes('intermediate') || title.includes('tutorial') ||
+                 video.durationSeconds > 900) {
+        difficultyScore = 2;
+      }
+      
+      categorizedVideos.push({
+        ...video,
+        difficultyScore,
+        difficultyReasoning: "Basic keyword analysis"
+      });
     }
-    // Advanced indicators (higher scores = advanced)
-    else if (title.includes('advanced') || title.includes('master') || title.includes('expert') ||
-             title.includes('complete') || title.includes('comprehensive') || title.includes('deep') ||
-             description.includes('advanced') || description.includes('comprehensive')) {
-      difficultyScore = 3;
-    }
-    // Default based on duration and content complexity
-    else {
-      if (video.durationSeconds > 1800) difficultyScore = 3; // 30+ min = advanced
-      else if (video.durationSeconds > 900) difficultyScore = 2; // 15+ min = intermediate  
-      else difficultyScore = 1; // shorter = beginner
-    }
-    
-    return { ...video, difficultyScore };
-  });
+  }
 
   // Sort by relevance first, then by difficulty for proper progression
   const sortedVideos = categorizedVideos.sort((a, b) => {
@@ -462,13 +535,13 @@ function optimizeLearningPath(videos: any[], query: string): any[] {
 }
 
 // Generate learning path with 3 sequential videos
-function generateLearningPath(videos: YouTubeVideo[], query: string) {
+async function generateLearningPath(videos: YouTubeVideo[], query: string) {
   if (videos.length === 0) {
     throw new Error("No videos found for this topic");
   }
 
   // Use optimized learning progression (no duplicates)
-  const optimizedVideos = optimizeLearningPath(videos, query);
+  const optimizedVideos = await optimizeLearningPath(videos, query);
 
   // Assign appropriate levels and enhance descriptions
   const levels = ["beginner", "intermediate", "advanced"];
@@ -478,7 +551,7 @@ function generateLearningPath(videos: YouTubeVideo[], query: string) {
     `Advanced ${query} topics and comprehensive understanding`
   ];
 
-  return optimizedVideos.map((video, index) => ({
+  return optimizedVideos.map((video: any, index: number) => ({
     youtubeId: video.id,
     title: video.title,
     description: `${levelDescriptions[index]}. ${video.description?.substring(0, 200) || 'Educational content'}...`,
@@ -506,7 +579,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const youtubeVideos = await searchYouTubeVideos(query);
       
       // Generate learning path
-      const learningPath = generateLearningPath(youtubeVideos, query);
+      const learningPath = await generateLearningPath(youtubeVideos, query);
       
       // Clear previous videos for this topic and save new ones
       await storage.clearVideosByTopic(query);
