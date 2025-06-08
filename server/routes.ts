@@ -17,6 +17,10 @@ const YOUTUBE_API_KEYS = [
 
 let currentKeyIndex = 0;
 
+// Simple in-memory cache to reduce API calls
+const searchCache = new Map<string, { data: any, timestamp: number }>();
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+
 function getNextYouTubeAPIKey(): string {
   if (YOUTUBE_API_KEYS.length === 0) {
     throw new Error("No YouTube API keys configured");
@@ -31,6 +35,35 @@ function getNextYouTubeAPIKey(): string {
   
   console.log(`Using YouTube API key ${currentKeyIndex + 1}/${YOUTUBE_API_KEYS.length}`);
   return key;
+}
+
+function getCachedSearch(query: string): any | null {
+  const cacheKey = query.toLowerCase().trim();
+  const cached = searchCache.get(cacheKey);
+  
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    console.log(`Cache hit for "${query}" - skipping YouTube API calls`);
+    return cached.data;
+  }
+  
+  return null;
+}
+
+function setCachedSearch(query: string, data: any): void {
+  const cacheKey = query.toLowerCase().trim();
+  searchCache.set(cacheKey, {
+    data,
+    timestamp: Date.now()
+  });
+  
+  // Keep cache size manageable
+  if (searchCache.size > 100) {
+    const iterator = searchCache.keys();
+    const firstKey = iterator.next();
+    if (!firstKey.done) {
+      searchCache.delete(firstKey.value);
+    }
+  }
 }
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
@@ -113,6 +146,12 @@ Rate this video's relevance to learning about "${topic}".`
 async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
   console.log(`Searching YouTube for: "${query}"`);
 
+  // Check cache first to avoid API calls
+  const cachedResult = getCachedSearch(query);
+  if (cachedResult) {
+    return cachedResult;
+  }
+
   // Try each API key until one works or all fail
   const maxAttempts = YOUTUBE_API_KEYS.length;
   
@@ -126,7 +165,7 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
         `q=${encodeURIComponent(query)}&` +
         `part=snippet&` +
         `type=video&` +
-        `maxResults=20&` +
+        `maxResults=10&` +
         `order=relevance&` +
         `safeSearch=strict&` +
         `relevanceLanguage=en`;
@@ -141,7 +180,12 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
         console.log(`YouTube returned ${allVideos.length} raw search results for "${query}"`);
         
         // Continue with the rest of the function logic...
-        return await processYouTubeResults(allVideos, currentAPIKey, query);
+        const results = await processYouTubeResults(allVideos, currentAPIKey, query);
+        
+        // Cache the results for future queries
+        setCachedSearch(query, results);
+        
+        return results;
       }
       
       // Handle quota exceeded - try next API key
@@ -198,8 +242,8 @@ async function processYouTubeResults(allVideos: any[], apiKey: string, query: st
     throw new Error(`No videos found for topic: ${query}`);
   }
 
-  const videoIds = uniqueResults.slice(0, 15).map((item: any) => item.id.videoId).join(",");
-  console.log(`Fetching details for ${Math.min(15, uniqueResults.length)} videos`);
+  const videoIds = uniqueResults.slice(0, 8).map((item: any) => item.id.videoId).join(",");
+  console.log(`Fetching details for ${Math.min(8, uniqueResults.length)} videos`);
 
   // Get video details including duration (use same API key for consistency)
   const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?` +
