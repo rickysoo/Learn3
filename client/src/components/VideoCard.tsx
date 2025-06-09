@@ -103,7 +103,7 @@ export function VideoCard({ video, levelNumber, onPlay }: VideoCardProps) {
                 video.difficultyScore === 2 ? 'bg-blue-100 text-blue-700' :
                 'bg-purple-100 text-purple-700'
               }`}>
-                {(video.difficultyScore / 3).toFixed(2)}
+                {((video.difficultyScore - 1) / 2).toFixed(2)}
               </span>
             </div>
           )}
