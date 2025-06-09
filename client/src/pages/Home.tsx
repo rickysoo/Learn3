@@ -3,6 +3,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { VideoCard } from "@/components/VideoCard";
 import { VideoModal } from "@/components/VideoModal";
 import { LoadingState } from "@/components/LoadingState";
+import { QuotaDebugger } from "@/components/QuotaDebugger";
 import { useYouTubeSearch } from "@/hooks/useYouTubeSearch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -193,6 +194,9 @@ export default function Home() {
           </p>
         </div>
       </footer>
+
+      {/* Quota Debugger - Hidden debugging panel */}
+      <QuotaDebugger />
     </div>
   );
 }

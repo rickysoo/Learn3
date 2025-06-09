@@ -251,7 +251,7 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
 }
 
 // Process YouTube API results with the successful API key
-async function processYouTubeResults(allVideos: any[], apiKey: string, query: string): Promise<YouTubeVideo[]> {
+async function processYouTubeResults(allVideos: any[], apiKey: string, keyIndex: number, query: string): Promise<YouTubeVideo[]> {
   // Remove duplicates
   const uniqueResults = allVideos.filter((video: any, index: number, self: any[]) => 
     index === self.findIndex((v: any) => v.id.videoId === video.id.videoId)
@@ -281,6 +281,9 @@ async function processYouTubeResults(allVideos: any[], apiKey: string, query: st
   }
 
   const detailsData = JSON.parse(detailsResponseText);
+  
+  // Track quota usage for video details call
+  quotaTracker.trackDetailCall(keyIndex, uniqueResults.length);
   
   // Process videos and filter by duration
   const allProcessedVideos = detailsData.items
@@ -684,6 +687,17 @@ async function generateLearningPath(videos: YouTubeVideo[], query: string) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Quota usage endpoint for debugging
+  app.get("/api/quota-usage", async (req, res) => {
+    try {
+      const usage = quotaTracker.getTodayUsage();
+      res.json(usage);
+    } catch (error) {
+      console.error("Error fetching quota usage:", error);
+      res.status(500).json({ error: "Failed to fetch quota usage" });
+    }
+  });
+
   // Search for videos
   app.post("/api/search", async (req, res) => {
     try {
