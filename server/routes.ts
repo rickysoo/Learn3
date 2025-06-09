@@ -207,7 +207,10 @@ async function searchYouTubeVideos(query: string): Promise<{videos: YouTubeVideo
         // Cache the results for future queries
         setCachedSearch(query, results);
         
-        return results;
+        // Calculate quota consumed: 1 search call (100 units) + video details (1 unit per video)
+        const quotaConsumed = 100 + results.length;
+        
+        return { videos: results, apiKeyUsed: keyIndex, quotaConsumed };
       }
       
       // Handle quota exceeded - try next API key
@@ -713,10 +716,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Analytics endpoint
+  app.get("/api/analytics", async (req, res) => {
+    try {
+      const analytics = await analyticsService.getSearchAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+      res.status(500).json({ error: "Failed to fetch analytics" });
+    }
+  });
+
   // Search for videos
   app.post("/api/search", async (req, res) => {
     const startTime = Date.now();
-    let sessionId: string;
+    let sessionId: string = "";
     let apiKeyUsed = -1;
     let quotaConsumed = 0;
     
@@ -730,10 +744,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       sessionId = providedSessionId || generateSessionId();
 
       // Search YouTube for videos
-      const youtubeVideos = await searchYouTubeVideos(query);
+      const searchResult = await searchYouTubeVideos(query);
+      apiKeyUsed = searchResult.apiKeyUsed;
+      quotaConsumed = searchResult.quotaConsumed;
       
       // Generate learning path
-      const learningPath = await generateLearningPath(youtubeVideos, query);
+      const learningPath = await generateLearningPath(searchResult.videos, query);
       
       // Clear previous videos for this topic and save new ones
       await storage.clearVideosByTopic(query);
@@ -761,7 +777,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Search error:", error);
       
       // Record failed search analytics if we have session info
-      if (sessionId) {
+      if (sessionId && sessionId !== "") {
         const processingTime = Date.now() - startTime;
         await analyticsService.recordSearchAnalytics(
           sessionId,

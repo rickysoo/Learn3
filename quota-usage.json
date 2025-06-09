@@ -28,9 +28,9 @@
   },
   "2025-06-09": {
     "1": {
-      "searchCalls": 1,
-      "detailCalls": 1,
-      "totalUnits": 115
+      "searchCalls": 2,
+      "detailCalls": 2,
+      "totalUnits": 230
     }
   }
 }
