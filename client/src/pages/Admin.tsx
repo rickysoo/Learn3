@@ -333,6 +333,153 @@ export default function Admin() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="topics" className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle>Search Topics</CardTitle>
+                  <CardDescription>
+                    Popular search topics and their performance metrics
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={handleRefreshTopics}
+                  disabled={topicsLoading}
+                  size="sm"
+                  variant="outline"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${topicsLoading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {topicsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-4 text-muted-foreground">Loading topics data...</p>
+                  </div>
+                ) : topicsData ? (
+                  <div className="space-y-4">
+                    <div className="grid gap-2">
+                      {topicsData.map((topic: any, index: number) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-4 border rounded-lg bg-white hover:bg-gray-50"
+                        >
+                          <div className="flex-1">
+                            <div className="font-medium text-lg">{topic.topic}</div>
+                            <div className="text-sm text-gray-500">
+                              Last searched: {formatTime(topic.lastSearched)}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm">
+                            <div className="text-center">
+                              <div className="font-bold text-blue-600">{topic.count}</div>
+                              <div className="text-gray-500">searches</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-bold text-green-600">{topic.totalQuota}</div>
+                              <div className="text-gray-500">quota used</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-bold text-purple-600">{formatDuration(topic.avgProcessingTime)}</div>
+                              <div className="text-gray-500">avg time</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No topics data available</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="videos" className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle>Retrieved Videos</CardTitle>
+                  <CardDescription>
+                    Videos retrieved and analyzed by the system
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={handleRefreshVideos}
+                  disabled={videosLoading}
+                  size="sm"
+                  variant="outline"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${videosLoading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {videosLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-4 text-muted-foreground">Loading videos data...</p>
+                  </div>
+                ) : videosData ? (
+                  <div className="space-y-4">
+                    <div className="grid gap-3">
+                      {videosData.slice(0, 20).map((video: any) => (
+                        <div
+                          key={video.id}
+                          className="flex items-start justify-between p-4 border rounded-lg bg-white hover:bg-gray-50"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-base mb-1 line-clamp-2">{video.title}</div>
+                            <div className="text-sm text-gray-600 mb-2">{video.channelName}</div>
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <span>Query: {video.searchQuery}</span>
+                              <span>Retrieved: {formatTime(video.retrievedAt)}</span>
+                              {video.duration && <span>Duration: {Math.floor(video.duration / 60)}m {video.duration % 60}s</span>}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 text-sm ml-4">
+                            <div className="text-center">
+                              <div className="font-bold text-blue-600">{video.level}</div>
+                              <div className="text-gray-500 text-xs">level</div>
+                            </div>
+                            {video.relevanceScore && (
+                              <div className="text-center">
+                                <div className="font-bold text-green-600">{video.relevanceScore}</div>
+                                <div className="text-gray-500 text-xs">relevance</div>
+                              </div>
+                            )}
+                            {video.difficultyScore && (
+                              <div className="text-center">
+                                <div className="font-bold text-purple-600">{video.difficultyScore}</div>
+                                <div className="text-gray-500 text-xs">difficulty</div>
+                              </div>
+                            )}
+                            <a
+                              href={`https://youtube.com/watch?v=${video.youtubeId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:text-blue-700 text-xs underline"
+                            >
+                              Watch
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No videos data available</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </div>
