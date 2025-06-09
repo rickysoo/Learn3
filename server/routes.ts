@@ -214,6 +214,8 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
         try {
           const errorData = JSON.parse(responseText);
           if (errorData.error?.errors?.[0]?.reason === "quotaExceeded") {
+            // Track quota usage even for failed calls due to quota exceeded
+            quotaTracker.trackSearchCall(keyIndex);
             console.log(`API key ${attempt + 1}/${maxAttempts} quota exceeded, trying next key...`);
             continue; // Try next API key
           }
@@ -695,6 +697,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching quota usage:", error);
       res.status(500).json({ error: "Failed to fetch quota usage" });
+    }
+  });
+
+  // Endpoint to manually mark all keys as exhausted (for admin/debugging)
+  app.post("/api/quota-exhausted", async (req, res) => {
+    try {
+      quotaTracker.markAllKeysExhausted();
+      const usage = quotaTracker.getTodayUsage();
+      res.json({ message: "All API keys marked as exhausted", usage });
+    } catch (error) {
+      console.error("Error marking keys as exhausted:", error);
+      res.status(500).json({ error: "Failed to mark keys as exhausted" });
     }
   });
 

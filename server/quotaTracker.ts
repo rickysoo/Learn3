@@ -28,6 +28,19 @@ class QuotaTracker {
     this.loadData();
   }
 
+  // Method to manually record quota exhaustion for all keys
+  markAllKeysExhausted(): void {
+    const today = this.getToday();
+    for (let i = 0; i < 4; i++) {
+      this.ensureKeyExists(today, i);
+      // Set each key to the daily limit (10,000 units per key)
+      this.data[today][i].totalUnits = 10000;
+      this.data[today][i].searchCalls = 100; // 100 searches * 100 units = 10,000
+    }
+    this.saveData();
+    console.log('[Quota] All API keys marked as exhausted for today');
+  }
+
   private loadData(): void {
     try {
       if (fs.existsSync(QUOTA_FILE_PATH)) {
