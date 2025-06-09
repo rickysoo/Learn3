@@ -70,14 +70,14 @@ export default function Home() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center h-16">
-            <div className="flex items-center space-x-3">
+          <div className="flex justify-center items-center h-14 sm:h-16">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <img 
                 src={learn3Logo} 
                 alt="Learn3 Logo" 
-                className="w-10 h-10 rounded-lg shadow-lg"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shadow-lg"
               />
-              <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">Learn3</h1>
+              <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">Learn3</h1>
             </div>
           </div>
         </div>

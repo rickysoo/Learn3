@@ -33,24 +33,24 @@
       "totalUnits": 115
     },
     "1": {
-      "searchCalls": 7,
-      "detailCalls": 7,
-      "totalUnits": 805
+      "searchCalls": 8,
+      "detailCalls": 8,
+      "totalUnits": 920
     },
     "2": {
-      "searchCalls": 3,
-      "detailCalls": 3,
-      "totalUnits": 345
+      "searchCalls": 4,
+      "detailCalls": 4,
+      "totalUnits": 460
     },
     "3": {
-      "searchCalls": 1,
-      "detailCalls": 1,
-      "totalUnits": 115
+      "searchCalls": 2,
+      "detailCalls": 2,
+      "totalUnits": 230
     },
     "4": {
-      "searchCalls": 1,
-      "detailCalls": 1,
-      "totalUnits": 115
+      "searchCalls": 2,
+      "detailCalls": 2,
+      "totalUnits": 230
     }
   }
 }

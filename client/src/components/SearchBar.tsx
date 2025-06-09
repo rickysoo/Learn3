@@ -56,36 +56,36 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
   };
 
   return (
-    <section className="bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 py-16 lg:py-24">
+    <section className="bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 py-8 sm:py-16 lg:py-24">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
+        <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 sm:mb-6">
           <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             Master Any Topic in 3 Levels
           </span>
         </h2>
-        <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">
+        <p className="text-base sm:text-xl text-slate-600 mb-6 sm:mb-10 max-w-2xl mx-auto">
           Enter any subject and get a curated learning path with Level 1 to 3 videos for a solid understanding.
         </p>
 
         <form onSubmit={handleSubmit} className="relative max-w-2xl mx-auto">
-          <div className="flex rounded-2xl shadow-lg bg-white border border-slate-200 overflow-hidden">
+          <div className="flex flex-col sm:flex-row rounded-2xl shadow-lg bg-white border border-slate-200 overflow-hidden">
             <div className="flex-1 relative">
               <Input
                 type="text"
                 placeholder="Enter any topic"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full px-6 py-4 text-lg border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 disabled={isLoading}
               />
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2 sm:hidden">
                 <Search className="h-5 w-5 text-slate-400" />
               </div>
             </div>
             <Button
               type="submit"
               size="lg"
-              className="px-8 py-4 bg-primary hover:bg-primary/90 text-white font-semibold text-lg rounded-none"
+              className="px-4 sm:px-8 py-3 sm:py-4 bg-primary hover:bg-primary/90 text-white font-semibold text-base sm:text-lg rounded-none sm:rounded-none"
               disabled={isLoading || !query.trim()}
             >
               {isLoading ? "Searching..." : "Start Learning"}

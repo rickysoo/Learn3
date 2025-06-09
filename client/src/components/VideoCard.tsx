@@ -73,16 +73,16 @@ export function VideoCard({ video, levelNumber, onPlay }: VideoCardProps) {
         )}
       </div>
 
-      <CardContent className="p-6">
-        <h4 className="text-xl font-semibold text-slate-900 mb-3 line-clamp-2">
+      <CardContent className="p-4 sm:p-6">
+        <h4 className="text-lg sm:text-xl font-semibold text-slate-900 mb-2 sm:mb-3 line-clamp-2">
           {video.title}
         </h4>
-        <p className="text-slate-600 text-sm mb-4 line-clamp-3">
+        <p className="text-slate-600 text-sm mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3">
           {video.description}
         </p>
 
-        {/* Debugging Scores - User Friendly Display */}
-        <div className="flex items-center gap-2 mb-4 text-xs flex-wrap">
+        {/* Scores Display - Mobile Optimized */}
+        <div className="flex items-center gap-1 sm:gap-2 mb-3 sm:mb-4 text-xs flex-wrap">
           {video.relevanceScore && (
             <div className="flex items-center gap-1">
               <span className="text-slate-500">Topic Match:</span>
@@ -107,31 +107,21 @@ export function VideoCard({ video, levelNumber, onPlay }: VideoCardProps) {
               </span>
             </div>
           )}
-          {video.publishedAt && (
-            <div className="flex items-center gap-1">
-              <span className="text-slate-500">Published:</span>
-              <span className="px-2 py-1 rounded-full font-medium bg-slate-100 text-slate-700">
-                {new Date(video.publishedAt).toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'short' 
-                })}
-              </span>
-            </div>
-          )}
+
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center space-x-2 text-sm text-slate-500">
-            <svg className="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+            <svg className="w-4 h-4 text-red-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
               <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
             </svg>
-            <span>{video.channelName}</span>
+            <span className="truncate">{video.channelName}</span>
           </div>
           <div className="flex items-center space-x-2">
             <Button
               onClick={handlePlayClick}
               size="sm"
-              className="bg-primary hover:bg-primary/90 text-white"
+              className="bg-primary hover:bg-primary/90 text-white flex-1 sm:flex-none"
             >
               <Play className="h-4 w-4 mr-1" />
               Play
