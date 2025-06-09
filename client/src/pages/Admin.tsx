@@ -411,7 +411,7 @@ export default function Admin() {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                     <p className="mt-4 text-muted-foreground">Loading videos data...</p>
                   </div>
-                ) : videosData && Array.isArray(videosData) ? (
+                ) : videosData ? (
                   <div className="space-y-4">
                     <div className="grid gap-3">
                       {videosData.slice(0, 20).map((video: any) => (
@@ -433,18 +433,14 @@ export default function Admin() {
                               <div className="font-bold text-blue-600">{video.level}</div>
                               <div className="text-gray-500 text-xs">level</div>
                             </div>
-                            {video.relevanceScore && (
-                              <div className="text-center">
-                                <div className="font-bold text-green-600">{video.relevanceScore}</div>
-                                <div className="text-gray-500 text-xs">relevance</div>
-                              </div>
-                            )}
-                            {video.difficultyScore && (
-                              <div className="text-center">
-                                <div className="font-bold text-purple-600">{video.difficultyScore}</div>
-                                <div className="text-gray-500 text-xs">difficulty</div>
-                              </div>
-                            )}
+                            <div className="text-center">
+                              <div className="font-bold text-green-600">{video.relevanceScore || 'N/A'}</div>
+                              <div className="text-gray-500 text-xs">relevance</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-bold text-purple-600">{video.difficultyScore || 'N/A'}</div>
+                              <div className="text-gray-500 text-xs">difficulty</div>
+                            </div>
                             <a
                               href={`https://youtube.com/watch?v=${video.youtubeId}`}
                               target="_blank"
