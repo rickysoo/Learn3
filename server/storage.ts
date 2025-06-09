@@ -1,60 +1,75 @@
-import { videos, type Video, type InsertVideo } from "@shared/schema";
+import { videos, searches, videoRetrievals, apiUsage, 
+         type Video, type InsertVideo, type Search, type InsertSearch,
+         type VideoRetrieval, type InsertVideoRetrieval, type ApiUsage, type InsertApiUsage } from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   getVideosByTopic(topic: string): Promise<Video[]>;
   saveVideos(videos: InsertVideo[]): Promise<Video[]>;
   clearVideosByTopic(topic: string): Promise<void>;
+  
+  // Analytics methods
+  recordSearch(search: InsertSearch): Promise<Search>;
+  recordVideoRetrievals(retrievals: InsertVideoRetrieval[]): Promise<VideoRetrieval[]>;
+  updateApiUsage(usage: InsertApiUsage): Promise<void>;
+  getApiUsageByDate(date: string): Promise<ApiUsage[]>;
 }
 
-export class MemStorage implements IStorage {
-  private videos: Map<number, Video>;
-  private currentId: number;
-
-  constructor() {
-    this.videos = new Map();
-    this.currentId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getVideosByTopic(topic: string): Promise<Video[]> {
-    return Array.from(this.videos.values()).filter(
-      (video) => video.topic?.toLowerCase() === topic.toLowerCase()
-    );
+    return await db.select().from(videos).where(eq(videos.topic, topic));
   }
 
   async saveVideos(insertVideos: InsertVideo[]): Promise<Video[]> {
-    const savedVideos: Video[] = [];
-    
-    for (const insertVideo of insertVideos) {
-      const id = this.currentId++;
-      const video: Video = { 
-        id,
-        youtubeId: insertVideo.youtubeId,
-        title: insertVideo.title,
-        description: insertVideo.description || null,
-        channelName: insertVideo.channelName || null,
-        duration: insertVideo.duration || null,
-        thumbnailUrl: insertVideo.thumbnailUrl || null,
-        level: insertVideo.level || null,
-        topic: insertVideo.topic || null,
-        relevanceScore: insertVideo.relevanceScore || null,
-        difficultyScore: insertVideo.difficultyScore || null,
-      };
-      this.videos.set(id, video);
-      savedVideos.push(video);
-    }
-    
-    return savedVideos;
+    return await db.insert(videos).values(insertVideos).returning();
   }
 
   async clearVideosByTopic(topic: string): Promise<void> {
-    const videosToDelete = Array.from(this.videos.entries()).filter(
-      ([_, video]) => video.topic?.toLowerCase() === topic.toLowerCase()
-    );
-    
-    for (const [id] of videosToDelete) {
-      this.videos.delete(id);
+    await db.delete(videos).where(eq(videos.topic, topic));
+  }
+
+  // Analytics methods
+  async recordSearch(search: InsertSearch): Promise<Search> {
+    const [result] = await db.insert(searches).values(search).returning();
+    return result;
+  }
+
+  async recordVideoRetrievals(retrievals: InsertVideoRetrieval[]): Promise<VideoRetrieval[]> {
+    if (retrievals.length === 0) return [];
+    return await db.insert(videoRetrievals).values(retrievals).returning();
+  }
+
+  async updateApiUsage(usage: InsertApiUsage): Promise<void> {
+    // Upsert: update if exists, insert if not
+    const existing = await db.select().from(apiUsage)
+      .where(and(
+        eq(apiUsage.date, usage.date),
+        eq(apiUsage.apiKeyIndex, usage.apiKeyIndex)
+      ));
+
+    if (existing.length > 0) {
+      await db.update(apiUsage)
+        .set({
+          searchCalls: usage.searchCalls,
+          detailCalls: usage.detailCalls,
+          totalUnits: usage.totalUnits,
+          successfulCalls: usage.successfulCalls,
+          failedCalls: usage.failedCalls,
+          updatedAt: new Date()
+        })
+        .where(and(
+          eq(apiUsage.date, usage.date),
+          eq(apiUsage.apiKeyIndex, usage.apiKeyIndex)
+        ));
+    } else {
+      await db.insert(apiUsage).values(usage);
     }
+  }
+
+  async getApiUsageByDate(date: string): Promise<ApiUsage[]> {
+    return await db.select().from(apiUsage).where(eq(apiUsage.date, date));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
