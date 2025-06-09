@@ -27,10 +27,30 @@
     }
   },
   "2025-06-09": {
+    "0": {
+      "searchCalls": 1,
+      "detailCalls": 1,
+      "totalUnits": 115
+    },
     "1": {
-      "searchCalls": 3,
-      "detailCalls": 3,
-      "totalUnits": 345
+      "searchCalls": 4,
+      "detailCalls": 4,
+      "totalUnits": 460
+    },
+    "2": {
+      "searchCalls": 1,
+      "detailCalls": 1,
+      "totalUnits": 115
+    },
+    "3": {
+      "searchCalls": 1,
+      "detailCalls": 1,
+      "totalUnits": 115
+    },
+    "4": {
+      "searchCalls": 1,
+      "detailCalls": 1,
+      "totalUnits": 115
     }
   }
 }

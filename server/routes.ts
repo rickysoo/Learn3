@@ -3,6 +3,9 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { quotaTracker } from "./quotaTracker";
 import { analyticsService, generateSessionId } from "./analytics";
+import { db } from "./db";
+import { searches as searchesTable } from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
 import type { YouTubeVideo, VideoSearchResult } from "@shared/schema";
 import OpenAI from "openai";
@@ -757,15 +760,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const processingTime = Date.now() - startTime;
       
-      // Record analytics
-      await analyticsService.recordSearchAnalytics(
-        sessionId,
-        query,
-        savedVideos,
-        processingTime,
-        apiKeyUsed,
-        quotaConsumed
-      );
+      // Record analytics with deduplication (only if no duplicate within last minute)
+      try {
+        const recentSearches = await db
+          .select()
+          .from(searchesTable)
+          .where(eq(searchesTable.query, query))
+          .orderBy(desc(searchesTable.createdAt))
+          .limit(1);
+        
+        const lastSearch = recentSearches[0];
+        const isDuplicateWithinMinute = lastSearch && 
+          (Date.now() - lastSearch.createdAt.getTime()) < 60000; // 1 minute
+        
+        if (!isDuplicateWithinMinute) {
+          await analyticsService.recordSearchAnalytics(
+            sessionId,
+            query,
+            savedVideos,
+            processingTime,
+            apiKeyUsed,
+            quotaConsumed
+          );
+        }
+      } catch (analyticsError) {
+        console.error("Analytics recording error:", analyticsError);
+        // Continue with response even if analytics fails
+      }
 
       const result: VideoSearchResult = {
         videos: savedVideos,
