@@ -87,14 +87,14 @@ export default function Home() {
       <SearchBar onSearch={handleSearch} isLoading={searchMutation.isPending} />
 
       {/* Learning Path Visualization */}
-      <section className="py-12 bg-white">
+      <section className="py-8 sm:py-12 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">Your Learning Journey</h3>
-            <p className="text-slate-600">Follow our structured 3-level approach to build foundational understanding</p>
+          <div className="text-center mb-8 sm:mb-12">
+            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-3 sm:mb-4">Your Learning Journey</h3>
+            <p className="text-sm sm:text-base text-slate-600">Follow our structured 3-level approach to build foundational understanding</p>
           </div>
           
-          <div className="flex flex-col lg:flex-row justify-center items-center lg:items-start space-y-8 lg:space-y-0 lg:space-x-8 mb-16">
+          <div className="flex flex-col lg:flex-row justify-center items-center lg:items-start space-y-6 lg:space-y-0 lg:space-x-8 mb-8 sm:mb-16">
             {/* Step 1 */}
             <div className="flex flex-col items-center text-center max-w-xs">
               <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
@@ -153,7 +153,7 @@ export default function Home() {
                 <p className="text-slate-600">Here's your personalized 3-level learning journey</p>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 {searchResults.map((video, index) => (
                   <VideoCard
                     key={video.id}
