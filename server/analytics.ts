@@ -96,28 +96,19 @@ export class AnalyticsService {
     try {
       // Get recent searches with details
       const searches = await db
-        .select({
-          id: searchesTable.id,
-          sessionId: searchesTable.sessionId,
-          query: searchesTable.query,
-          videoCount: searchesTable.resultsCount,
-          processingTime: searchesTable.processingTimeMs,
-          apiKeyUsed: searchesTable.apiKeyUsed,
-          quotaConsumed: searchesTable.quotaConsumed,
-          createdAt: searchesTable.createdAt,
-        })
+        .select()
         .from(searchesTable)
         .orderBy(desc(searchesTable.createdAt))
         .limit(limit);
 
       // Calculate summary statistics
       const totalSearches = searches.length;
-      const uniqueSessions = new Set(searches.map((s: any) => s.sessionId)).size;
-      const avgProcessingTime = searches.reduce((sum: number, s: any) => sum + (s.processingTime || 0), 0) / totalSearches || 0;
-      const totalQuotaUsed = searches.reduce((sum: number, s: any) => sum + s.quotaConsumed, 0);
+      const uniqueSessions = new Set(searches.map(s => s.sessionId)).size;
+      const avgProcessingTime = searches.reduce((sum, s) => sum + (s.processingTimeMs || 0), 0) / totalSearches || 0;
+      const totalQuotaUsed = searches.reduce((sum, s) => sum + s.quotaConsumed, 0);
 
       // Get popular topics (group by similar queries)
-      const topicCounts = searches.reduce((acc: Record<string, number>, search: any) => {
+      const topicCounts = searches.reduce((acc: Record<string, number>, search) => {
         const topic = search.query.toLowerCase();
         acc[topic] = (acc[topic] || 0) + 1;
         return acc;
@@ -129,8 +120,14 @@ export class AnalyticsService {
         .map(([topic, count]) => ({ topic, count }));
 
       return {
-        searches: searches.map((search: any) => ({
-          ...search,
+        searches: searches.map(search => ({
+          id: search.id,
+          sessionId: search.sessionId,
+          query: search.query,
+          videoCount: search.resultsCount,
+          processingTime: search.processingTimeMs || 0,
+          apiKeyUsed: search.apiKeyUsed,
+          quotaConsumed: search.quotaConsumed,
           createdAt: search.createdAt.toISOString(),
         })),
         summary: {
