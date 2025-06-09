@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { quotaTracker } from "./quotaTracker";
 import { z } from "zod";
 import type { YouTubeVideo, VideoSearchResult } from "@shared/schema";
 import OpenAI from "openai";
@@ -21,7 +22,7 @@ let currentKeyIndex = 0;
 const searchCache = new Map<string, { data: any, timestamp: number }>();
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
-function getNextYouTubeAPIKey(): string {
+function getNextYouTubeAPIKey(): { key: string; index: number } {
   if (YOUTUBE_API_KEYS.length === 0) {
     throw new Error("No YouTube API keys configured");
   }
@@ -34,7 +35,7 @@ function getNextYouTubeAPIKey(): string {
   currentKeyIndex = (currentKeyIndex + 1) % YOUTUBE_API_KEYS.length;
   
   console.log(`Using YouTube API key ${currentKeyIndex + 1}/${YOUTUBE_API_KEYS.length}`);
-  return key;
+  return { key, index: currentKeyIndex };
 }
 
 function getCachedSearch(query: string): any | null {
@@ -171,7 +172,9 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
   const maxAttempts = YOUTUBE_API_KEYS.length;
   
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const currentAPIKey = getNextYouTubeAPIKey();
+    const apiKeyInfo = getNextYouTubeAPIKey();
+    const currentAPIKey = apiKeyInfo.key;
+    const keyIndex = apiKeyInfo.index;
     
     try {
       // Single optimized search query to save API costs
@@ -194,8 +197,11 @@ async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
         const allVideos = searchData.items || [];
         console.log(`YouTube returned ${allVideos.length} raw search results for "${query}"`);
         
+        // Track quota usage for search call
+        quotaTracker.trackSearchCall(keyIndex);
+        
         // Continue with the rest of the function logic...
-        const results = await processYouTubeResults(allVideos, currentAPIKey, query);
+        const results = await processYouTubeResults(allVideos, currentAPIKey, keyIndex, query);
         
         // Cache the results for future queries
         setCachedSearch(query, results);
