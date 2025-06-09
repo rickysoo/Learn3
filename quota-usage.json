@@ -1,0 +1,24 @@
+{
+  "2025-06-08": {
+    "0": {
+      "searchCalls": 100,
+      "detailCalls": 0,
+      "totalUnits": 10000
+    },
+    "1": {
+      "searchCalls": 100,
+      "detailCalls": 0,
+      "totalUnits": 10000
+    },
+    "2": {
+      "searchCalls": 100,
+      "detailCalls": 0,
+      "totalUnits": 10000
+    },
+    "3": {
+      "searchCalls": 100,
+      "detailCalls": 0,
+      "totalUnits": 10000
+    }
+  }
+}
