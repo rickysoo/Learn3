@@ -4,8 +4,8 @@ import { storage } from "./storage";
 import { quotaTracker } from "./quotaTracker";
 import { analyticsService, generateSessionId } from "./analytics";
 import { db } from "./db";
-import { searches as searchesTable } from "@shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { searches as searchesTable, videoRetrievals as videoRetrievalsTable } from "@shared/schema";
+import { eq, desc, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { YouTubeVideo, VideoSearchResult } from "@shared/schema";
 import OpenAI from "openai";
@@ -727,6 +727,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching analytics:", error);
       res.status(500).json({ error: "Failed to fetch analytics" });
+    }
+  });
+
+  // Topics endpoint
+  app.get("/api/admin/topics", async (req, res) => {
+    try {
+      const topics = await db
+        .select({
+          topic: searchesTable.query,
+          count: sql<number>`count(*)`,
+          lastSearched: sql<Date>`max(${searchesTable.createdAt})`,
+          totalQuota: sql<number>`sum(${searchesTable.quotaConsumed})`,
+          avgProcessingTime: sql<number>`avg(${searchesTable.processingTimeMs})`
+        })
+        .from(searchesTable)
+        .groupBy(searchesTable.query)
+        .orderBy(desc(sql`count(*)`))
+        .limit(50);
+      
+      res.json(topics.map(topic => ({
+        ...topic,
+        lastSearched: topic.lastSearched.toISOString(),
+        avgProcessingTime: Math.round(topic.avgProcessingTime || 0)
+      })));
+    } catch (error) {
+      console.error("Error fetching topics:", error);
+      res.status(500).json({ error: "Failed to fetch topics" });
+    }
+  });
+
+  // Videos endpoint
+  app.get("/api/admin/videos", async (req, res) => {
+    try {
+      const videos = await db
+        .select({
+          id: videoRetrievalsTable.id,
+          youtubeId: videoRetrievalsTable.youtubeId,
+          title: videoRetrievalsTable.title,
+          channelName: videoRetrievalsTable.channelName,
+          duration: videoRetrievalsTable.duration,
+          level: videoRetrievalsTable.level,
+          relevanceScore: videoRetrievalsTable.relevanceScore,
+          difficultyScore: videoRetrievalsTable.difficultyScore,
+          searchQuery: searchesTable.query,
+          retrievedAt: videoRetrievalsTable.createdAt
+        })
+        .from(videoRetrievalsTable)
+        .leftJoin(searchesTable, eq(videoRetrievalsTable.searchId, searchesTable.id))
+        .orderBy(desc(videoRetrievalsTable.createdAt))
+        .limit(100);
+      
+      res.json(videos.map(video => ({
+        ...video,
+        retrievedAt: video.retrievedAt.toISOString()
+      })));
+    } catch (error) {
+      console.error("Error fetching videos:", error);
+      res.status(500).json({ error: "Failed to fetch videos" });
     }
   });
 

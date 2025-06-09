@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QuotaDebugger } from "@/components/QuotaDebugger";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,16 @@ interface AnalyticsData {
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("quota");
+  const [currentTime, setCurrentTime] = useState(new Date());
   const queryClient = useQueryClient();
+
+  // Update Pacific time every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const { data: quotaData, isLoading: quotaLoading, refetch: refetchQuota } = useQuery<QuotaData>({
     queryKey: ["/api/quota-usage"],
@@ -69,6 +78,19 @@ export default function Admin() {
     return `${(ms / 1000).toFixed(2)}s`;
   };
 
+  const getPacificTime = () => {
+    return currentTime.toLocaleString("en-US", {
+      timeZone: "America/Los_Angeles",
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto p-6">
@@ -87,14 +109,22 @@ export default function Admin() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="quota" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
               API Quota
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <TabsTrigger value="searches" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
-              Analytics
+              Searches
+            </TabsTrigger>
+            <TabsTrigger value="topics" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Topics
+            </TabsTrigger>
+            <TabsTrigger value="videos" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Videos
             </TabsTrigger>
           </TabsList>
 
@@ -149,12 +179,9 @@ export default function Admin() {
                       </div>
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <div className="text-sm font-medium text-gray-900">
-                          {quotaData.currentDate}
+                          {getPacificTime()}
                         </div>
-                        <div className="text-sm text-gray-600">Current Date</div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {quotaData.timezone}
-                        </div>
+                        <div className="text-sm text-gray-600">Current Time (Pacific)</div>
                       </div>
                     </div>
 
@@ -180,7 +207,7 @@ export default function Admin() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="analytics" className="space-y-6">
+          <TabsContent value="searches" className="space-y-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <div>
