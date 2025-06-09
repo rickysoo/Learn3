@@ -62,12 +62,30 @@ export default function Admin() {
     refetchInterval: 30000, // Auto-refresh every 30 seconds
   });
 
+  const { data: topicsData, isLoading: topicsLoading, refetch: refetchTopics } = useQuery({
+    queryKey: ["/api/admin/topics"],
+    refetchInterval: 30000,
+  });
+
+  const { data: videosData, isLoading: videosLoading, refetch: refetchVideos } = useQuery({
+    queryKey: ["/api/admin/videos"],
+    refetchInterval: 30000,
+  });
+
   const handleRefreshQuota = () => {
     refetchQuota();
   };
 
   const handleRefreshAnalytics = () => {
     refetchAnalytics();
+  };
+
+  const handleRefreshTopics = () => {
+    refetchTopics();
+  };
+
+  const handleRefreshVideos = () => {
+    refetchVideos();
   };
 
   const formatTime = (timestamp: string) => {

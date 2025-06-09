@@ -5,7 +5,7 @@ import { quotaTracker } from "./quotaTracker";
 import { analyticsService, generateSessionId } from "./analytics";
 import { db } from "./db";
 import { searches as searchesTable, videoRetrievals as videoRetrievalsTable } from "@shared/schema";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, count, max, sum, avg } from "drizzle-orm";
 import { z } from "zod";
 import type { YouTubeVideo, VideoSearchResult } from "@shared/schema";
 import OpenAI from "openai";
@@ -734,23 +734,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/topics", async (req, res) => {
     try {
       const topics = await db
-        .select({
-          topic: searchesTable.query,
-          count: sql<number>`count(*)`,
-          lastSearched: sql<Date>`max(${searchesTable.createdAt})`,
-          totalQuota: sql<number>`sum(${searchesTable.quotaConsumed})`,
-          avgProcessingTime: sql<number>`avg(${searchesTable.processingTimeMs})`
-        })
+        .select()
         .from(searchesTable)
-        .groupBy(searchesTable.query)
-        .orderBy(desc(sql`count(*)`))
-        .limit(50);
+        .orderBy(desc(searchesTable.createdAt));
       
-      res.json(topics.map(topic => ({
-        ...topic,
-        lastSearched: topic.lastSearched.toISOString(),
-        avgProcessingTime: Math.round(topic.avgProcessingTime || 0)
-      })));
+      // Group topics manually to avoid complex aggregation issues
+      const topicStats = topics.reduce((acc: any, search: any) => {
+        const topic = search.query.toLowerCase();
+        if (!acc[topic]) {
+          acc[topic] = {
+            topic: search.query,
+            count: 0,
+            lastSearched: search.createdAt,
+            totalQuota: 0,
+            totalProcessingTime: 0
+          };
+        }
+        acc[topic].count++;
+        acc[topic].totalQuota += search.quotaConsumed || 0;
+        acc[topic].totalProcessingTime += search.processingTimeMs || 0;
+        if (search.createdAt > acc[topic].lastSearched) {
+          acc[topic].lastSearched = search.createdAt;
+        }
+        return acc;
+      }, {});
+
+      const result = Object.values(topicStats)
+        .map((topic: any) => ({
+          topic: topic.topic,
+          count: topic.count,
+          lastSearched: topic.lastSearched.toISOString(),
+          totalQuota: topic.totalQuota,
+          avgProcessingTime: Math.round(topic.totalProcessingTime / topic.count)
+        }))
+        .sort((a: any, b: any) => b.count - a.count)
+        .slice(0, 50);
+      
+      res.json(result);
     } catch (error) {
       console.error("Error fetching topics:", error);
       res.status(500).json({ error: "Failed to fetch topics" });
@@ -778,9 +798,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .orderBy(desc(videoRetrievalsTable.createdAt))
         .limit(100);
       
-      res.json(videos.map(video => ({
+      res.json(videos.map((video: any) => ({
         ...video,
-        retrievedAt: video.retrievedAt.toISOString()
+        retrievedAt: video.retrievedAt ? video.retrievedAt.toISOString() : null
       })));
     } catch (error) {
       console.error("Error fetching videos:", error);
