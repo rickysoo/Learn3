@@ -92,15 +92,56 @@ export class AnalyticsService {
 
   async getSearchAnalytics(limit: number = 100) {
     try {
-      // Note: This would require additional database queries to implement fully
-      // For now, return a simple structure
+      // Get recent searches with details
+      const searches = await db
+        .select({
+          id: searchesTable.id,
+          sessionId: searchesTable.sessionId,
+          query: searchesTable.query,
+          videoCount: searchesTable.videoCount,
+          processingTime: searchesTable.processingTime,
+          apiKeyUsed: searchesTable.apiKeyUsed,
+          quotaConsumed: searchesTable.quotaConsumed,
+          createdAt: searchesTable.createdAt,
+        })
+        .from(searchesTable)
+        .orderBy(desc(searchesTable.createdAt))
+        .limit(limit);
+
+      // Calculate summary statistics
+      const totalSearches = searches.length;
+      const uniqueSessions = new Set(searches.map(s => s.sessionId)).size;
+      const avgProcessingTime = searches.reduce((sum, s) => sum + s.processingTime, 0) / totalSearches || 0;
+      const totalQuotaUsed = searches.reduce((sum, s) => sum + s.quotaConsumed, 0);
+
+      // Get popular topics (group by similar queries)
+      const topicCounts = searches.reduce((acc, search) => {
+        const topic = search.query.toLowerCase();
+        acc[topic] = (acc[topic] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const popularTopics = Object.entries(topicCounts)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 10)
+        .map(([topic, count]) => ({ topic, count }));
+
       return {
-        message: "Search analytics would be implemented with JOIN queries",
-        note: "Database tables are ready for comprehensive analytics queries"
+        searches: searches.map(search => ({
+          ...search,
+          createdAt: search.createdAt.toISOString(),
+        })),
+        summary: {
+          totalSearches,
+          uniqueSessions,
+          avgProcessingTime,
+          totalQuotaUsed,
+          popularTopics,
+        }
       };
     } catch (error) {
       console.error('[Analytics] Error fetching search analytics:', error);
-      return null;
+      throw new Error("Failed to fetch analytics data");
     }
   }
 }
