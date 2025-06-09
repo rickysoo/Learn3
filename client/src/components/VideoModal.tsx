@@ -12,9 +12,9 @@ export function VideoModal({ video, isOpen, onClose }: VideoModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl w-full max-h-[90vh] p-0">
-        <DialogHeader className="p-4 border-b border-slate-200">
-          <DialogTitle className="text-lg font-semibold text-slate-900 truncate">
+      <DialogContent className="max-w-5xl w-[95vw] sm:w-full max-h-[90vh] p-0 m-2 sm:m-6">
+        <DialogHeader className="p-3 sm:p-4 border-b border-slate-200">
+          <DialogTitle className="text-base sm:text-lg font-semibold text-slate-900 line-clamp-2">
             {video.title}
           </DialogTitle>
         </DialogHeader>

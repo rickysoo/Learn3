@@ -3,6 +3,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { VideoCard } from "@/components/VideoCard";
 import { VideoModal } from "@/components/VideoModal";
 import { LoadingState } from "@/components/LoadingState";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { useYouTubeSearch } from "@/hooks/useYouTubeSearch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -176,6 +177,9 @@ export default function Home() {
         isOpen={!!selectedVideo}
         onClose={handleCloseModal}
       />
+
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
 
       {/* Footer */}
       <footer className="bg-slate-900 text-white py-8">
