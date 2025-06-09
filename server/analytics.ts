@@ -1,6 +1,8 @@
 import { storage } from "./storage";
+import { db } from "./db";
 import { nanoid } from "nanoid";
-import type { InsertSearch, InsertVideoRetrieval, InsertApiUsage } from "@shared/schema";
+import { desc } from "drizzle-orm";
+import { searches as searchesTable, type InsertSearch, type InsertVideoRetrieval, type InsertApiUsage, type Video } from "@shared/schema";
 
 // Generate a unique session ID for tracking user sessions
 export function generateSessionId(): string {
@@ -98,8 +100,8 @@ export class AnalyticsService {
           id: searchesTable.id,
           sessionId: searchesTable.sessionId,
           query: searchesTable.query,
-          videoCount: searchesTable.videoCount,
-          processingTime: searchesTable.processingTime,
+          videoCount: searchesTable.resultsCount,
+          processingTime: searchesTable.processingTimeMs,
           apiKeyUsed: searchesTable.apiKeyUsed,
           quotaConsumed: searchesTable.quotaConsumed,
           createdAt: searchesTable.createdAt,
@@ -110,24 +112,24 @@ export class AnalyticsService {
 
       // Calculate summary statistics
       const totalSearches = searches.length;
-      const uniqueSessions = new Set(searches.map(s => s.sessionId)).size;
-      const avgProcessingTime = searches.reduce((sum, s) => sum + s.processingTime, 0) / totalSearches || 0;
-      const totalQuotaUsed = searches.reduce((sum, s) => sum + s.quotaConsumed, 0);
+      const uniqueSessions = new Set(searches.map((s: any) => s.sessionId)).size;
+      const avgProcessingTime = searches.reduce((sum: number, s: any) => sum + (s.processingTime || 0), 0) / totalSearches || 0;
+      const totalQuotaUsed = searches.reduce((sum: number, s: any) => sum + s.quotaConsumed, 0);
 
       // Get popular topics (group by similar queries)
-      const topicCounts = searches.reduce((acc, search) => {
+      const topicCounts = searches.reduce((acc: Record<string, number>, search: any) => {
         const topic = search.query.toLowerCase();
         acc[topic] = (acc[topic] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
 
       const popularTopics = Object.entries(topicCounts)
-        .sort(([,a], [,b]) => b - a)
+        .sort(([,a], [,b]) => (b as number) - (a as number))
         .slice(0, 10)
         .map(([topic, count]) => ({ topic, count }));
 
       return {
-        searches: searches.map(search => ({
+        searches: searches.map((search: any) => ({
           ...search,
           createdAt: search.createdAt.toISOString(),
         })),
