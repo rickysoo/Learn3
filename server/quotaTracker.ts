@@ -49,7 +49,10 @@ class QuotaTracker {
   }
 
   private getToday(): string {
-    return new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    // Get current time in Pacific timezone
+    const now = new Date();
+    const pacificTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Los_Angeles"}));
+    return pacificTime.toISOString().split('T')[0]; // YYYY-MM-DD format in Pacific time
   }
 
   private ensureKeyExists(date: string, keyIndex: number): void {
@@ -87,7 +90,7 @@ class QuotaTracker {
     this.saveData();
   }
 
-  getTodayUsage(): { totalUnits: number; byKey: Array<{ keyIndex: number; units: number; calls: number }> } {
+  getTodayUsage(): { totalUnits: number; byKey: Array<{ keyIndex: number; units: number; calls: number }>; currentDate: string; timezone: string } {
     const today = this.getToday();
     const todayData = this.data[today] || {};
     
@@ -104,7 +107,12 @@ class QuotaTracker {
       });
     }
     
-    return { totalUnits, byKey };
+    return { 
+      totalUnits, 
+      byKey, 
+      currentDate: today,
+      timezone: "Pacific Time" 
+    };
   }
 
   getUsageForDate(date: string): any {

@@ -7,6 +7,8 @@ interface QuotaUsage {
     units: number;
     calls: number;
   }>;
+  currentDate: string;
+  timezone: string;
 }
 
 export function QuotaDebugger() {
@@ -78,6 +80,10 @@ export function QuotaDebugger() {
           <div className="mt-2 pt-2 border-t border-slate-700 text-slate-400">
             <div>Search: 100 units | Details: 1 unit/video</div>
             <div>~{Math.floor(remainingQuota / 115)} searches remaining</div>
+            <div className="text-xs mt-1">
+              Date: {quotaData.currentDate} ({quotaData.timezone})
+            </div>
+            <div className="text-xs">Resets at midnight Pacific</div>
           </div>
         </div>
       )}
