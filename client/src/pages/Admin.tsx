@@ -62,12 +62,12 @@ export default function Admin() {
     refetchInterval: 30000, // Auto-refresh every 30 seconds
   });
 
-  const { data: topicsData, isLoading: topicsLoading, refetch: refetchTopics } = useQuery({
+  const { data: topicsData, isLoading: topicsLoading, refetch: refetchTopics } = useQuery<any[]>({
     queryKey: ["/api/admin/topics"],
     refetchInterval: 30000,
   });
 
-  const { data: videosData, isLoading: videosLoading, refetch: refetchVideos } = useQuery({
+  const { data: videosData, isLoading: videosLoading, refetch: refetchVideos } = useQuery<any[]>({
     queryKey: ["/api/admin/videos"],
     refetchInterval: 30000,
   });
@@ -309,21 +309,7 @@ export default function Admin() {
                       </div>
                     </div>
 
-                    {analyticsData.summary.popularTopics.length > 0 && (
-                      <div className="space-y-4">
-                        <h4 className="font-medium text-gray-900">Popular Topics</h4>
-                        <div className="grid gap-2 md:grid-cols-2">
-                          {analyticsData.summary.popularTopics.slice(0, 6).map((topic, index) => (
-                            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                              <span className="font-medium capitalize">{topic.topic}</span>
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                                {topic.count} searches
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+
                   </div>
                 ) : (
                   <div className="text-center py-8">
@@ -425,7 +411,7 @@ export default function Admin() {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                     <p className="mt-4 text-muted-foreground">Loading videos data...</p>
                   </div>
-                ) : videosData ? (
+                ) : videosData && Array.isArray(videosData) ? (
                   <div className="space-y-4">
                     <div className="grid gap-3">
                       {videosData.slice(0, 20).map((video: any) => (
