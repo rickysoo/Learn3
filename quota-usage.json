@@ -33,9 +33,9 @@
       "totalUnits": 115
     },
     "1": {
-      "searchCalls": 5,
-      "detailCalls": 5,
-      "totalUnits": 575
+      "searchCalls": 6,
+      "detailCalls": 6,
+      "totalUnits": 690
     },
     "2": {
       "searchCalls": 2,
