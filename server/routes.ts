@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { quotaTracker } from "./quotaTracker";
+import { analyticsService, generateSessionId } from "./analytics";
 import { z } from "zod";
 import type { YouTubeVideo, VideoSearchResult } from "@shared/schema";
 import OpenAI from "openai";
@@ -159,13 +160,13 @@ function calculateRecencyScore(publishedAt: string): number {
 }
 
 // Enhanced YouTube search with automatic API key failover
-async function searchYouTubeVideos(query: string): Promise<YouTubeVideo[]> {
+async function searchYouTubeVideos(query: string): Promise<{videos: YouTubeVideo[], apiKeyUsed: number, quotaConsumed: number}> {
   console.log(`Searching YouTube for: "${query}"`);
 
   // Check cache first to avoid API calls
   const cachedResult = getCachedSearch(query);
   if (cachedResult) {
-    return cachedResult;
+    return { videos: cachedResult, apiKeyUsed: -1, quotaConsumed: 0 };
   }
 
   // Try each API key until one works or all fail
@@ -714,14 +715,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Search for videos
   app.post("/api/search", async (req, res) => {
+    const startTime = Date.now();
+    let sessionId: string;
+    let apiKeyUsed = -1;
+    let quotaConsumed = 0;
+    
     try {
       const searchSchema = z.object({
         query: z.string().min(1, "Search query is required"),
+        sessionId: z.string().optional(),
       });
 
-      const { query } = searchSchema.parse(req.body);
-
-
+      const { query, sessionId: providedSessionId } = searchSchema.parse(req.body);
+      sessionId = providedSessionId || generateSessionId();
 
       // Search YouTube for videos
       const youtubeVideos = await searchYouTubeVideos(query);
@@ -733,6 +739,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.clearVideosByTopic(query);
       const savedVideos = await storage.saveVideos(learningPath);
 
+      const processingTime = Date.now() - startTime;
+      
+      // Record analytics
+      await analyticsService.recordSearchAnalytics(
+        sessionId,
+        query,
+        savedVideos,
+        processingTime,
+        apiKeyUsed,
+        quotaConsumed
+      );
+
       const result: VideoSearchResult = {
         videos: savedVideos,
         query,
@@ -741,6 +759,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(result);
     } catch (error) {
       console.error("Search error:", error);
+      
+      // Record failed search analytics if we have session info
+      if (sessionId) {
+        const processingTime = Date.now() - startTime;
+        await analyticsService.recordSearchAnalytics(
+          sessionId,
+          req.body?.query || "unknown",
+          [],
+          processingTime,
+          apiKeyUsed,
+          quotaConsumed
+        );
+      }
+      
       res.status(500).json({ 
         message: error instanceof Error ? error.message : "Failed to search videos" 
       });

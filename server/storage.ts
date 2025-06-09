@@ -29,7 +29,6 @@ export class DatabaseStorage implements IStorage {
     await db.delete(videos).where(eq(videos.topic, topic));
   }
 
-  // Analytics methods
   async recordSearch(search: InsertSearch): Promise<Search> {
     const [result] = await db.insert(searches).values(search).returning();
     return result;
@@ -41,7 +40,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateApiUsage(usage: InsertApiUsage): Promise<void> {
-    // Upsert: update if exists, insert if not
     const existing = await db.select().from(apiUsage)
       .where(and(
         eq(apiUsage.date, usage.date),
