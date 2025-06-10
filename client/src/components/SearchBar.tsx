@@ -76,7 +76,7 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
 
           <div className="mt-6">
             <div className="flex items-center justify-center gap-2 mb-3">
-              <span className="text-sm text-slate-500">Try these AI-suggested topics:</span>
+              <span className="text-sm text-slate-500">Try these topics:</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -90,7 +90,7 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
             <div className="flex flex-wrap justify-center gap-2">
               {topicsLoading ? (
                 <div className="flex space-x-2">
-                  {Array.from({ length: 8 }).map((_, i) => (
+                  {Array.from({ length: 5 }).map((_, i) => (
                     <div key={i} className="h-8 w-20 bg-slate-200 rounded-full animate-pulse" />
                   ))}
                 </div>

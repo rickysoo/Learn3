@@ -7,14 +7,14 @@ interface TopicResponse {
   topics: string[];
 }
 
-export async function generateRandomTopics(count: number = 8): Promise<string[]> {
+export async function generateRandomTopics(count: number = 5): Promise<string[]> {
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
           role: "system",
-          content: `You are an educational topic generator. Generate diverse learning topics from various fields that would be suitable for YouTube video searches. Topics should vary in scope - some broad (like "Economics"), some narrow (like "Supervised Learning"), and some skill-based (like "Conversation Skills"). 
+          content: `You are an educational topic generator. Generate diverse learning topics from various fields that would be suitable for YouTube video searches. Topics should vary in scope - some broad (like "Economics"), some narrow (like "Supervised Learning"), and some skill-based (like "Public Speaking"). 
 
 The topics should be:
 - Educational and learnable through videos
@@ -22,6 +22,7 @@ The topics should be:
 - Suitable for a 3-level learning progression (beginner to advanced)
 - Specific enough to find quality educational content
 - Not too niche or obscure
+- IMPORTANT: Each topic must be 1 to 5 words only
 
 Respond with JSON in this exact format: { "topics": ["Topic 1", "Topic 2", ...] }`
         },
@@ -46,8 +47,8 @@ Respond with JSON in this exact format: { "topics": ["Topic 1", "Topic 2", ...] 
     
     // Fallback to a few basic topics if OpenAI fails
     const fallbackTopics = [
-      "Machine Learning", "Public Speaking", "Financial Planning", "Photography", 
-      "Data Science", "Leadership", "Digital Marketing", "Psychology"
+      "Machine Learning", "Public Speaking", "Photography", 
+      "Data Science", "Leadership"
     ];
     
     return fallbackTopics.slice(0, count);
