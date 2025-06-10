@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, ArrowDown, GraduationCap } from "lucide-react";
 import type { Video } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import { trackSearch, trackVideoPlay } from "@/lib/analytics";
 import learn3Logo from "@assets/ChatGPT Image Jun 8, 2025, 11_10_23 AM_1749352230496.png";
 
 export default function Home() {
@@ -21,6 +22,9 @@ export default function Home() {
   const searchMutation = useYouTubeSearch();
 
   const handleSearch = async (query: string) => {
+    // Track search in GA
+    trackSearch(query);
+    
     try {
       const result = await searchMutation.mutateAsync(query);
       setSearchResults(result.videos);
@@ -59,6 +63,8 @@ export default function Home() {
   };
 
   const handlePlayVideo = (video: Video) => {
+    // Track video play in GA
+    trackVideoPlay(video.title, Number(video.level) || 1);
     setSelectedVideo(video);
   };
 

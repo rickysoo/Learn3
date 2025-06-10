@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, RefreshCw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { trackTopicClick, trackTopicRefresh } from "@/lib/analytics";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
