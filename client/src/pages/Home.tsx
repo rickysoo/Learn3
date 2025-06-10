@@ -64,7 +64,7 @@ export default function Home() {
 
   const handlePlayVideo = (video: Video) => {
     // Track video play in GA
-    trackVideoPlay(video.title, Number(video.level) || 1);
+    trackVideoPlay(video.title, String(video.level));
     setSelectedVideo(video);
   };
 

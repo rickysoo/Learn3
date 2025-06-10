@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, Download } from "lucide-react";
+import { trackPWAInstall } from "@/lib/analytics";
 
 export function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -27,6 +28,7 @@ export function PWAInstallPrompt() {
     const { outcome } = await deferredPrompt.userChoice;
     
     if (outcome === 'accepted') {
+      trackPWAInstall();
       setDeferredPrompt(null);
       setShowPrompt(false);
     }

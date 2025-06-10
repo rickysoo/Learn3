@@ -34,6 +34,7 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
   };
 
   const handleTopicClick = (topic: string) => {
+    trackTopicClick(topic);
     setQuery(topic);
     onSearch(topic);
   };
@@ -81,7 +82,10 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => refetchTopics()}
+                onClick={() => {
+                  trackTopicRefresh();
+                  refetchTopics();
+                }}
                 disabled={topicsLoading}
                 className="h-6 w-6 p-0 hover:bg-slate-100"
               >

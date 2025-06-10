@@ -65,8 +65,9 @@ export const trackSearch = (query: string) => {
   trackEvent('search', 'Learning', query);
 };
 
-export const trackVideoPlay = (videoTitle: string, level: number) => {
-  trackEvent('video_play', 'Learning', videoTitle, level);
+export const trackVideoPlay = (videoTitle: string, level: string | null) => {
+  const levelNum = level ? parseInt(level.replace(/\D/g, '')) || 1 : 1;
+  trackEvent('video_play', 'Learning', videoTitle, levelNum);
 };
 
 export const trackTopicClick = (topic: string) => {
