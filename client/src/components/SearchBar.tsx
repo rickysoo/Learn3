@@ -9,17 +9,21 @@ interface SearchBarProps {
   isLoading?: boolean;
 }
 
+interface TopicsResponse {
+  topics: string[];
+}
+
 export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
   const [query, setQuery] = useState("");
 
   // Fetch random topics from OpenAI
-  const { data: topicsData, isLoading: topicsLoading, refetch: refetchTopics } = useQuery({
+  const { data: topicsData, isLoading: topicsLoading, refetch: refetchTopics } = useQuery<TopicsResponse>({
     queryKey: ['/api/topics/random'],
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  const randomTopics = topicsData?.topics || [];
+  const randomTopics = (topicsData as TopicsResponse)?.topics || [];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,20 +74,41 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
             </Button>
           </div>
 
-          <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <span className="text-sm text-slate-500 mr-2"></span>
-            {randomTopics.map((topic) => (
+          <div className="mt-6">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <span className="text-sm text-slate-500">Try these AI-suggested topics:</span>
               <Button
-                key={topic}
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                onClick={() => handleTopicClick(topic)}
-                className="px-3 py-1 text-sm rounded-full border-slate-200 hover:border-primary/30 hover:text-primary"
-                disabled={isLoading}
+                onClick={() => refetchTopics()}
+                disabled={topicsLoading}
+                className="h-6 w-6 p-0 hover:bg-slate-100"
               >
-                {topic}
+                <RefreshCw className={`h-3 w-3 ${topicsLoading ? 'animate-spin' : ''}`} />
               </Button>
-            ))}
+            </div>
+            <div className="flex flex-wrap justify-center gap-2">
+              {topicsLoading ? (
+                <div className="flex space-x-2">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="h-8 w-20 bg-slate-200 rounded-full animate-pulse" />
+                  ))}
+                </div>
+              ) : (
+                randomTopics.map((topic: string) => (
+                  <Button
+                    key={topic}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleTopicClick(topic)}
+                    className="px-3 py-1 text-sm rounded-full border-slate-200 hover:border-primary/30 hover:text-primary"
+                    disabled={isLoading}
+                  >
+                    {topic}
+                  </Button>
+                ))
+              )}
+            </div>
           </div>
         </form>
       </div>
