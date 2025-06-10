@@ -33,14 +33,14 @@
       "totalUnits": 115
     },
     "1": {
-      "searchCalls": 10,
-      "detailCalls": 10,
-      "totalUnits": 1150
+      "searchCalls": 11,
+      "detailCalls": 11,
+      "totalUnits": 1265
     },
     "2": {
-      "searchCalls": 6,
-      "detailCalls": 6,
-      "totalUnits": 690
+      "searchCalls": 7,
+      "detailCalls": 7,
+      "totalUnits": 805
     },
     "3": {
       "searchCalls": 2,
