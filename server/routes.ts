@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { quotaTracker } from "./quotaTracker";
 import { analyticsService, generateSessionId } from "./analytics";
+import { generateRandomTopics } from "./topicGenerator";
 import { db } from "./db";
 import { searches as searchesTable, videoRetrievals as videoRetrievalsTable } from "@shared/schema";
 import { eq, desc, sql, count, max, sum, avg } from "drizzle-orm";
@@ -727,6 +728,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching analytics:", error);
       res.status(500).json({ error: "Failed to fetch analytics" });
+    }
+  });
+
+  // Generate random topics using OpenAI
+  app.get("/api/topics/random", async (req, res) => {
+    try {
+      const count = parseInt(req.query.count as string) || 8;
+      const topics = await generateRandomTopics(count);
+      res.json({ topics });
+    } catch (error) {
+      console.error("Error generating random topics:", error);
+      res.status(500).json({ error: "Failed to generate topics" });
     }
   });
 

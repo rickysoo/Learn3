@@ -1,47 +1,25 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, RefreshCw } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
   isLoading?: boolean;
 }
 
-const ALL_TOPICS = [
-  // Technology & Programming (specific skills)
-  "API Design", "CSS Flexbox", "Git Workflow", "JavaScript ES6", "Machine Learning", 
-  "Neural Networks", "Python Flask", "React Hooks", "REST APIs", "SQL Queries",
-  "Supervised Learning", "TypeScript", "Vue.js", "Web Security",
-  
-  // Business & Professional (specific skills)
-  "A/B Testing", "Brand Strategy", "Cold Calling", "Excel Pivot", "Financial Analysis",
-  "Google Analytics", "Market Research", "Negotiation", "PPC Advertising", "Sales Funnel",
-  "Scrum Master", "Supply Chain", "Team Leadership", "Time Blocking",
-  
-  // Creative & Design (specific techniques)
-  "Adobe Illustrator", "Color Theory", "Digital Drawing", "Film Editing", "Logo Design",
-  "Photography", "Photoshop", "Social Media", "Typography", "UI Prototyping",
-  "Video Editing", "Watercolor", "Web Animation",
-  
-  // Personal Development (specific skills)
-  "Active Listening", "Critical Thinking", "Goal Setting", "Habit Formation", "Memory Palace",
-  "Mindfulness", "Public Speaking", "Speed Reading", "Stress Management", "Time Management",
-  
-  // Academic & Science (specific topics)
-  "Algebra", "Cell Biology", "Chemistry Lab", "Data Analysis", "Economics 101",
-  "French Grammar", "Geometry", "History Timeline", "Physics Laws", "Psychology",
-  "Research Methods", "Spanish Verbs", "Statistics"
-];
-
 export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
   const [query, setQuery] = useState("");
 
-  // Generate 8 random topics on each component mount, sorted alphabetically
-  const randomTopics = useMemo(() => {
-    const shuffled = [...ALL_TOPICS].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 8).sort();
-  }, []);
+  // Fetch random topics from OpenAI
+  const { data: topicsData, isLoading: topicsLoading, refetch: refetchTopics } = useQuery({
+    queryKey: ['/api/topics/random'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  const randomTopics = topicsData?.topics || [];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
