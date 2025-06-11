@@ -52,5 +52,17 @@
       "detailCalls": 2,
       "totalUnits": 230
     }
+  },
+  "2025-06-10": {
+    "1": {
+      "searchCalls": 1,
+      "detailCalls": 1,
+      "totalUnits": 115
+    },
+    "2": {
+      "searchCalls": 1,
+      "detailCalls": 1,
+      "totalUnits": 115
+    }
   }
 }

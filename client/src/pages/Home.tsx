@@ -97,8 +97,8 @@ export default function Home() {
       <section className="py-8 sm:py-12 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-12">
-            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-3 sm:mb-4">Your Learning Journey</h3>
-            <p className="text-sm sm:text-base text-slate-600">Follow our structured 3-level approach to build foundational understanding</p>
+            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-3 sm:mb-4">How It Works</h3>
+            <p className="text-sm sm:text-base text-slate-600">We pick 3 perfect videos to take you from zero to hero</p>
           </div>
           
           <div className="flex flex-col lg:flex-row justify-center items-center lg:items-start space-y-6 lg:space-y-0 lg:space-x-8 mb-8 sm:mb-16">
@@ -107,8 +107,8 @@ export default function Home() {
               <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
                 <span className="text-white font-bold text-xl">1</span>
               </div>
-              <h4 className="text-lg font-semibold text-slate-900 mb-2">Level 1</h4>
-              <p className="text-slate-600 text-sm">Start with fundamentals and core concepts</p>
+              <h4 className="text-lg font-semibold text-slate-900 mb-2">🎯 The Basics</h4>
+              <p className="text-slate-600 text-sm">Get started</p>
             </div>
             
             <div className="hidden lg:block mt-8">
@@ -123,8 +123,8 @@ export default function Home() {
               <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
                 <span className="text-white font-bold text-xl">2</span>
               </div>
-              <h4 className="text-lg font-semibold text-slate-900 mb-2">Level 2</h4>
-              <p className="text-slate-600 text-sm">Build upon basics with practical applications</p>
+              <h4 className="text-lg font-semibold text-slate-900 mb-2">⚡ Get Practical</h4>
+              <p className="text-slate-600 text-sm">Level up</p>
             </div>
             
             <div className="hidden lg:block mt-8">
@@ -139,8 +139,8 @@ export default function Home() {
               <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-purple-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
                 <span className="text-white font-bold text-xl">3</span>
               </div>
-              <h4 className="text-lg font-semibold text-slate-900 mb-2">Level 3</h4>
-              <p className="text-slate-600 text-sm">Deep dive into complex topics and mastery</p>
+              <h4 className="text-lg font-semibold text-slate-900 mb-2">🧠 Go Pro</h4>
+              <p className="text-slate-600 text-sm">Master it</p>
             </div>
           </div>
         </div>
@@ -199,7 +199,7 @@ export default function Home() {
             <h1 className="text-xl font-bold text-white">Learn3</h1>
           </div>
           <p className="text-slate-400">
-            Transform your learning journey with curated video paths
+            Your personal video curator for learning anything, fast ⚡
           </p>
         </div>
       </footer>

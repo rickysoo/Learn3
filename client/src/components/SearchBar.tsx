@@ -44,11 +44,11 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 sm:mb-6">
           <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Master Any Topic in 3 Levels
+            Learn Anything in 3 Videos
           </span>
         </h2>
         <p className="text-base sm:text-xl text-slate-600 mb-6 sm:mb-10 max-w-2xl mx-auto">
-          Enter any subject and get a curated learning path with Level 1 to 3 videos for a solid understanding.
+          Find the perfect video trio for any topic.
         </p>
 
         <form onSubmit={handleSubmit} className="relative max-w-2xl mx-auto">
@@ -56,7 +56,7 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
             <div className="flex-1 relative">
               <Input
                 type="text"
-                placeholder="Enter any topic"
+                placeholder="What do you want to learn?"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -72,7 +72,7 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
               className="px-4 sm:px-8 py-3 sm:py-4 bg-primary hover:bg-primary/90 text-white font-semibold text-base sm:text-lg rounded-none sm:rounded-none"
               disabled={isLoading || !query.trim()}
             >
-              {isLoading ? "Searching..." : "Start Learning"}
+              {isLoading ? "Searching..." : "Find My Videos"}
             </Button>
           </div>
 
