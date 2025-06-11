@@ -198,8 +198,11 @@ export default function Home() {
             />
             <h1 className="text-xl font-bold text-white">Learn3</h1>
           </div>
-          <p className="text-slate-400">
+          <p className="text-slate-400 mb-4">
             Your personal video curator for learning anything, fast ⚡
+          </p>
+          <p className="text-slate-400 text-sm">
+            💡 Want to dive deeper into AI? <a href="https://AICoach.my" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">Learn AI</a>
           </p>
         </div>
       </footer>
