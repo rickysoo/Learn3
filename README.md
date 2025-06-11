@@ -103,8 +103,7 @@ Learn3 is built with modern web technologies for performance, scalability, and u
 
 #### Analytics & Monitoring
 - **Google Analytics 4**: Comprehensive user behavior tracking
-- **Custom Analytics**: Search patterns, video engagement, topic popularity
-- **Admin Dashboard**: Real-time usage statistics and system health
+- **Usage Insights**: Search patterns, video engagement, topic popularity
 
 ### Technology Stack
 
@@ -134,17 +133,7 @@ Environment-based configuration
 Automated dependency management
 ```
 
-### API Endpoints
 
-#### Core Endpoints
-- `POST /api/search` - Search and curate video learning paths
-- `GET /api/topics/random` - Generate AI-powered topic suggestions
-- `GET /api/quota-usage` - Monitor API usage and limits
-
-#### Admin Endpoints
-- `GET /api/analytics` - Retrieve usage analytics
-- `GET /api/admin/topics` - Topic performance metrics
-- `GET /api/admin/videos` - Video retrieval statistics
 
 ### Database Schema
 
@@ -156,8 +145,7 @@ Automated dependency management
 
 #### Analytics Tables
 - Search queries and patterns
-- Video retrieval metrics
-- API usage tracking
+- Video engagement metrics
 - User session data
 
 ### Environment Configuration
@@ -175,7 +163,7 @@ OPENAI_API_KEY=your_openai_key
 # Database
 DATABASE_URL=postgresql://user:pass@host/db
 
-# Analytics
+# Analytics (optional)
 VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
