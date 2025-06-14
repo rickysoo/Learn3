@@ -1,8 +1,9 @@
-import { videos, searches, videoRetrievals, apiUsage, 
+import { videos, searches, videoRetrievals, apiUsage, bookmarks,
          type Video, type InsertVideo, type Search, type InsertSearch,
-         type VideoRetrieval, type InsertVideoRetrieval, type ApiUsage, type InsertApiUsage } from "@shared/schema";
+         type VideoRetrieval, type InsertVideoRetrieval, type ApiUsage, type InsertApiUsage,
+         type Bookmark, type InsertBookmark } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
   getVideosByTopic(topic: string): Promise<Video[]>;
@@ -14,6 +15,12 @@ export interface IStorage {
   recordVideoRetrievals(retrievals: InsertVideoRetrieval[]): Promise<VideoRetrieval[]>;
   updateApiUsage(usage: InsertApiUsage): Promise<void>;
   getApiUsageByDate(date: string): Promise<ApiUsage[]>;
+  
+  // Bookmark methods
+  saveBookmark(bookmark: InsertBookmark): Promise<Bookmark>;
+  getUserBookmarks(userId: string): Promise<Bookmark[]>;
+  deleteBookmark(bookmarkId: number, userId: string): Promise<void>;
+  getBookmarkByUserAndQuery(userId: string, query: string): Promise<Bookmark | null>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -67,6 +74,29 @@ export class DatabaseStorage implements IStorage {
 
   async getApiUsageByDate(date: string): Promise<ApiUsage[]> {
     return await db.select().from(apiUsage).where(eq(apiUsage.date, date));
+  }
+
+  // Bookmark methods
+  async saveBookmark(bookmark: InsertBookmark): Promise<Bookmark> {
+    const [savedBookmark] = await db.insert(bookmarks).values(bookmark).returning();
+    return savedBookmark;
+  }
+
+  async getUserBookmarks(userId: string): Promise<Bookmark[]> {
+    return await db.select().from(bookmarks).where(eq(bookmarks.userId, userId)).orderBy(desc(bookmarks.createdAt));
+  }
+
+  async deleteBookmark(bookmarkId: number, userId: string): Promise<void> {
+    await db.delete(bookmarks).where(
+      and(eq(bookmarks.id, bookmarkId), eq(bookmarks.userId, userId))
+    );
+  }
+
+  async getBookmarkByUserAndQuery(userId: string, query: string): Promise<Bookmark | null> {
+    const [bookmark] = await db.select().from(bookmarks).where(
+      and(eq(bookmarks.userId, userId), eq(bookmarks.searchQuery, query))
+    );
+    return bookmark || null;
   }
 }
 
