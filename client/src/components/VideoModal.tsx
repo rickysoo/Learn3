@@ -20,7 +20,7 @@ export function VideoModal({ video, isOpen, onClose }: VideoModalProps) {
         </DialogHeader>
         <div className="aspect-video">
           <iframe
-            src={`https://www.youtube.com/embed/${video.youtubeId}?autoplay=1`}
+            src={`https://www.youtube.com/embed/${video.youtubeId}?autoplay=1&rel=0`}
             title={video.title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen

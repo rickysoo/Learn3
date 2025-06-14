@@ -14,6 +14,7 @@ export const videos = pgTable("videos", {
   topic: text("topic"),
   relevanceScore: integer("relevance_score"), // 0-100 for display (0.0-1.0 * 100)
   difficultyScore: integer("difficulty_score"), // 1-3 (beginner, intermediate, advanced)
+  publishedAt: text("published_at"), // ISO 8601 date string
 });
 
 export const insertVideoSchema = createInsertSchema(videos).omit({

@@ -684,6 +684,7 @@ async function generateLearningPath(videos: YouTubeVideo[], query: string) {
       topic: query,
       relevanceScore: Math.round((video.relevanceScore || 0) * 100), // Convert 0-1 to 0-100
       difficultyScore: video.difficultyScore || 1,
+      publishedAt: video.publishedAt,
     };
   });
   
