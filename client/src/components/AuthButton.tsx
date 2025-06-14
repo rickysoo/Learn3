@@ -8,6 +8,9 @@ import { Link } from "wouter";
 export function AuthButton() {
   const { user, loading } = useAuth();
   const { toast } = useToast();
+  
+  // Debug logging
+  console.log('AuthButton render:', { user: user?.displayName || user?.email || 'null', loading });
 
   const handleSignIn = async () => {
     try {
