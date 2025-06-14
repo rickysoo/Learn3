@@ -2,11 +2,13 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  apiKey: "AIzaSyAUj45Lnpz7wYmomuzFcDnry_F13ZQA_b8",
   authDomain: "learn3-c6f29.firebaseapp.com",
   projectId: "learn3-c6f29",
   storageBucket: "learn3-c6f29.firebasestorage.app",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  messagingSenderId: "349950778878",
+  appId: "1:349950778878:web:3fa2809182405ddfaa34af",
+  measurementId: "G-C65D93VKBL"
 };
 
 // Debug Firebase config
