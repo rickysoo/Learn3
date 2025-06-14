@@ -90,6 +90,16 @@
     }
   },
   "2025-06-14": {
+    "1": {
+      "searchCalls": 1,
+      "detailCalls": 1,
+      "totalUnits": 115
+    },
+    "2": {
+      "searchCalls": 1,
+      "detailCalls": 1,
+      "totalUnits": 115
+    },
     "3": {
       "searchCalls": 1,
       "detailCalls": 1,
