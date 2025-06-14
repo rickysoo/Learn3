@@ -4,6 +4,8 @@ import { VideoCard } from "@/components/VideoCard";
 import { VideoModal } from "@/components/VideoModal";
 import { LoadingState } from "@/components/LoadingState";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { AuthButton } from "@/components/AuthButton";
+import { BookmarkButton } from "@/components/BookmarkButton";
 import { useYouTubeSearch } from "@/hooks/useYouTubeSearch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

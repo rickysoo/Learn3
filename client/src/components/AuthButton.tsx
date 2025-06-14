@@ -1,0 +1,76 @@
+import { Button } from "@/components/ui/button";
+import { LogIn, LogOut, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { signInWithGoogle, signOutUser } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
+
+export function AuthButton() {
+  const { user, loading } = useAuth();
+  const { toast } = useToast();
+
+  const handleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      // User will be redirected for Google auth
+    } catch (error) {
+      console.error('Sign in error:', error);
+      toast({
+        title: "Sign In Failed",
+        description: "Could not sign in with Google. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOutUser();
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out.",
+      });
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast({
+        title: "Sign Out Failed",
+        description: "Could not sign out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <Button variant="ghost" size="sm" disabled>
+        <User className="h-4 w-4" />
+      </Button>
+    );
+  }
+
+  if (user) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-sm">
+          <img 
+            src={user.photoURL || ''} 
+            alt={user.displayName || 'User'} 
+            className="w-6 h-6 rounded-full"
+          />
+          <span className="hidden sm:inline text-slate-600">
+            {user.displayName || user.email}
+          </span>
+        </div>
+        <Button variant="ghost" size="sm" onClick={handleSignOut}>
+          <LogOut className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <Button variant="ghost" size="sm" onClick={handleSignIn}>
+      <LogIn className="h-4 w-4 mr-2" />
+      Sign In
+    </Button>
+  );
+}

@@ -923,6 +923,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bookmark endpoints
+  app.post("/api/bookmarks", async (req, res) => {
+    try {
+      const bookmarkSchema = z.object({
+        userId: z.string().min(1),
+        userEmail: z.string().email(),
+        userName: z.string().optional(),
+        searchQuery: z.string().min(1),
+        videoIds: z.array(z.string()),
+      });
+
+      const bookmarkData = bookmarkSchema.parse(req.body);
+      
+      // Check if bookmark already exists
+      const existingBookmark = await storage.getBookmarkByUserAndQuery(
+        bookmarkData.userId, 
+        bookmarkData.searchQuery
+      );
+      
+      if (existingBookmark) {
+        return res.status(409).json({ message: "Bookmark already exists for this search" });
+      }
+
+      const bookmark = await storage.saveBookmark(bookmarkData);
+      res.json(bookmark);
+    } catch (error) {
+      console.error("Bookmark creation error:", error);
+      res.status(500).json({ message: "Failed to create bookmark" });
+    }
+  });
+
+  app.get("/api/bookmarks/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const bookmarks = await storage.getUserBookmarks(userId);
+      res.json(bookmarks);
+    } catch (error) {
+      console.error("Fetch bookmarks error:", error);
+      res.status(500).json({ message: "Failed to fetch bookmarks" });
+    }
+  });
+
+  app.delete("/api/bookmarks/:bookmarkId", async (req, res) => {
+    try {
+      const bookmarkId = parseInt(req.params.bookmarkId);
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      await storage.deleteBookmark(bookmarkId, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete bookmark error:", error);
+      res.status(500).json({ message: "Failed to delete bookmark" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
