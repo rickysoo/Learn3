@@ -9,6 +9,7 @@ import { initGA } from "@/lib/analytics";
 import { useAnalytics } from "@/hooks/use-analytics";
 import Home from "@/pages/Home";
 import Admin from "@/pages/Admin";
+import Bookmarks from "@/pages/Bookmarks";
 import NotFound from "@/pages/not-found";
 
 function Router() {

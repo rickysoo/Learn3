@@ -106,11 +106,12 @@ export default function Home() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center h-14 sm:h-16">
+          <div className="flex justify-between items-center h-14 sm:h-16">
             <div className="flex items-center space-x-2 sm:space-x-3">
               <Learn3Logo className="w-8 h-8 sm:w-10 sm:h-10" />
               <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">Learn3</h1>
             </div>
+            <AuthButton />
           </div>
         </div>
       </header>
@@ -182,7 +183,8 @@ export default function Home() {
                 <h3 className="text-3xl font-bold text-slate-900 mb-4">
                   Learning Path: <span className="text-primary">{currentQuery}</span>
                 </h3>
-                <p className="text-slate-600">Here's your personalized 3-level learning journey</p>
+                <p className="text-slate-600 mb-6">Here's your personalized 3-level learning journey</p>
+                <BookmarkButton searchQuery={currentQuery} videos={searchResults} />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">

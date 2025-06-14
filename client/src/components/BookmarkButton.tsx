@@ -5,7 +5,7 @@ import { signInWithGoogle } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import type { Video, Bookmark as BookmarkType } from "@shared/schema";
 
 interface BookmarkButtonProps {
@@ -21,11 +21,8 @@ export function BookmarkButton({ searchQuery, videos }: BookmarkButtonProps) {
 
   // Check if search is already bookmarked
   const { data: bookmarks } = useQuery({
-    queryKey: ['/api/bookmarks', user?.uid],
-    queryFn: ({ queryKey }) => {
-      const userId = queryKey[1];
-      return userId ? apiRequest(`/api/bookmarks/${userId}`, { method: 'GET' }) : Promise.resolve([]);
-    },
+    queryKey: [`/api/bookmarks/${user?.uid}`],
+    queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !!user,
   });
 
@@ -36,16 +33,11 @@ export function BookmarkButton({ searchQuery, videos }: BookmarkButtonProps) {
 
   const createBookmarkMutation = useMutation({
     mutationFn: async (bookmarkData: any) => {
-      return apiRequest('/api/bookmarks', {
-        method: 'POST',
-        body: JSON.stringify(bookmarkData),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await apiRequest('/api/bookmarks', 'POST', bookmarkData);
+      return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/bookmarks', user?.uid] });
+      queryClient.invalidateQueries({ queryKey: [`/api/bookmarks/${user?.uid}`] });
       setIsBookmarked(true);
       toast({
         title: "Search Bookmarked",
