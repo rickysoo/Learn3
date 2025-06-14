@@ -13,11 +13,17 @@ export function AuthButton() {
     try {
       await signInWithGoogle();
       // User will be redirected for Google auth
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sign in error:', error);
+      
+      let description = "Could not sign in with Google. Please try again.";
+      if (error.code === 'auth/unauthorized-domain') {
+        description = "Domain not authorized. Please add your Replit domain to Firebase authorized domains in the Firebase Console.";
+      }
+      
       toast({
         title: "Sign In Failed",
-        description: "Could not sign in with Google. Please try again.",
+        description,
         variant: "destructive",
       });
     }

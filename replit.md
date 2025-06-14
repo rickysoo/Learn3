@@ -19,9 +19,11 @@ Learn3 is an AI-powered educational platform that transforms any topic into a st
 - **Language**: TypeScript with ES modules
 - **Database**: PostgreSQL with Drizzle ORM
 - **Cloud Database**: Neon serverless PostgreSQL
+- **Authentication**: Firebase OAuth with Google sign-in
 - **External APIs**: 
   - YouTube Data API v3 (with key rotation system)
   - OpenAI GPT-4 for content analysis and topic generation
+  - Firebase Authentication for user management
 
 ### Deployment Strategy
 - **Platform**: Replit with autoscale deployment
@@ -46,10 +48,11 @@ Learn3 is an AI-powered educational platform that transforms any topic into a st
 - Content quality assessment
 
 ### Database Schema
-- **Videos Table**: Stores curated video metadata with difficulty levels
+- **Videos Table**: Stores curated video metadata with difficulty levels and publication dates
 - **Searches Table**: Analytics for user search patterns
 - **Video Retrievals Table**: Tracks which videos are served for searches
 - **API Usage Table**: Monitors external API consumption
+- **Bookmarks Table**: User-saved search queries and video collections
 
 ### Analytics System
 - Real-time search tracking and performance metrics
@@ -101,8 +104,27 @@ The application uses Replit's deployment infrastructure with the following confi
 
 ```
 Changelog:
-- June 14, 2025. Initial setup
+- June 14, 2025: Initial setup with YouTube video search and OpenAI analysis
+- June 14, 2025: Added Firebase OAuth authentication with Google sign-in
+- June 14, 2025: Implemented bookmark functionality for registered users
+- June 14, 2025: Added video publication dates and auto-play features
+- June 14, 2025: Fixed Safari logo visibility with SVG implementation
 ```
+
+## Firebase Configuration Required
+
+To enable authentication, add your Replit domain to Firebase authorized domains:
+
+1. Go to Firebase Console > Authentication > Settings > Authorized domains
+2. Add your current Replit preview domain (e.g., `abc123-xyz.replit.dev`)
+3. Add your deployment domain when deployed (e.g., `your-app.replit.app`)
+
+## Authentication Features
+
+- **Google OAuth**: Sign in with Google account via Firebase
+- **Bookmark System**: Registered users can save video searches
+- **Unauthorized Access**: Non-registered users can still use search but cannot save
+- **Navigation**: Bookmarks page accessible for signed-in users
 
 ## User Preferences
 

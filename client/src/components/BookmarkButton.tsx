@@ -40,8 +40,8 @@ export function BookmarkButton({ searchQuery, videos }: BookmarkButtonProps) {
       queryClient.invalidateQueries({ queryKey: [`/api/bookmarks/${user?.uid}`] });
       setIsBookmarked(true);
       toast({
-        title: "Search Bookmarked",
-        description: "You can find this search in your bookmarks.",
+        title: "Videos Saved",
+        description: "You can find these videos in your saved searches.",
       });
     },
     onError: (error: any) => {
@@ -58,7 +58,7 @@ export function BookmarkButton({ searchQuery, videos }: BookmarkButtonProps) {
       // Prompt user to sign in
       toast({
         title: "Sign In Required",
-        description: "Sign in with Google to bookmark your searches.",
+        description: "Sign in with Google to save your video searches.",
         action: (
           <Button 
             variant="outline" 
@@ -115,7 +115,7 @@ export function BookmarkButton({ searchQuery, videos }: BookmarkButtonProps) {
       ) : (
         <Bookmark className="h-4 w-4" />
       )}
-      {isAlreadyBookmarked ? "Bookmarked" : "Bookmark Search"}
+{isAlreadyBookmarked ? "Saved" : "Save Videos"}
     </Button>
   );
 }
