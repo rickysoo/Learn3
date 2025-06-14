@@ -77,6 +77,17 @@ export const apiUsage = pgTable("api_usage", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// User bookmarks table
+export const bookmarks = pgTable("bookmarks", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(), // Firebase UID
+  userEmail: text("user_email").notNull(),
+  userName: text("user_name"),
+  searchQuery: text("search_query").notNull(),
+  videoIds: text("video_ids").array().notNull(), // Array of YouTube video IDs
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Insert schemas for analytics tables
 export const insertSearchSchema = createInsertSchema(searches).omit({
   id: true,
@@ -93,6 +104,11 @@ export const insertApiUsageSchema = createInsertSchema(apiUsage).omit({
   updatedAt: true,
 });
 
+export const insertBookmarkSchema = createInsertSchema(bookmarks).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types for analytics
 export type InsertSearch = z.infer<typeof insertSearchSchema>;
 export type Search = typeof searches.$inferSelect;
@@ -100,6 +116,8 @@ export type InsertVideoRetrieval = z.infer<typeof insertVideoRetrievalSchema>;
 export type VideoRetrieval = typeof videoRetrievals.$inferSelect;
 export type InsertApiUsage = z.infer<typeof insertApiUsageSchema>;
 export type ApiUsage = typeof apiUsage.$inferSelect;
+export type InsertBookmark = z.infer<typeof insertBookmarkSchema>;
+export type Bookmark = typeof bookmarks.$inferSelect;
 
 export interface VideoSearchResult {
   videos: Video[];
