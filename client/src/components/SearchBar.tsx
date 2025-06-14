@@ -48,7 +48,7 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
           </span>
         </h2>
         <p className="text-base sm:text-xl text-slate-600 mb-6 sm:mb-10 max-w-2xl mx-auto">
-          Find the perfect video trio for any topic.
+          Skip the clutter. Get 3 videos. Perfect for learning.
         </p>
 
         <form onSubmit={handleSubmit} className="relative max-w-2xl mx-auto">
