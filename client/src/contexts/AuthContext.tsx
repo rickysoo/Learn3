@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User } from 'firebase/auth';
-import { onAuthStateChange, handleRedirectResult } from '@/lib/firebase';
+import { onAuthStateChange } from '@/lib/firebase';
 
 interface AuthContextType {
   user: User | null;
@@ -28,18 +28,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Handle redirect result from Google sign-in
-    handleRedirectResult()
-      .then((result) => {
-        if (result?.user) {
-          console.log('User signed in via redirect:', result.user.displayName);
-        }
-      })
-      .catch((error) => {
-        console.error('Redirect authentication error:', error);
-        setError('Authentication failed. Please try again.');
-      });
-
     // Listen to authentication state changes
     const unsubscribe = onAuthStateChange((user) => {
       setUser(user);

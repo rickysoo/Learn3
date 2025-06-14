@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, signInWithRedirect, GoogleAuthProvider, getRedirectResult, signOut, onAuthStateChanged, User } from "firebase/auth";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -25,13 +25,10 @@ const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('email');
 googleProvider.addScope('profile');
 
-export const signInWithGoogle = () => {
-  return signInWithRedirect(auth, googleProvider);
-};
-
-export const handleRedirectResult = async () => {
+export const signInWithGoogle = async () => {
   try {
-    const result = await getRedirectResult(auth);
+    const result = await signInWithPopup(auth, googleProvider);
+    console.log('User signed in:', result.user.displayName);
     return result;
   } catch (error) {
     console.error('Authentication error:', error);
