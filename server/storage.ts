@@ -7,6 +7,7 @@ import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
   getVideosByTopic(topic: string): Promise<Video[]>;
+  getVideoById(videoId: number): Promise<Video | null>;
   saveVideos(videos: InsertVideo[]): Promise<Video[]>;
   clearVideosByTopic(topic: string): Promise<void>;
   
@@ -27,6 +28,11 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   async getVideosByTopic(topic: string): Promise<Video[]> {
     return await db.select().from(videos).where(eq(videos.topic, topic));
+  }
+
+  async getVideoById(videoId: number): Promise<Video | null> {
+    const [video] = await db.select().from(videos).where(eq(videos.id, videoId));
+    return video || null;
   }
 
   async saveVideos(insertVideos: InsertVideo[]): Promise<Video[]> {

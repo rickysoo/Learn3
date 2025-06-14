@@ -982,6 +982,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get video by ID
+  app.get("/api/videos/:videoId", async (req, res) => {
+    try {
+      const videoId = parseInt(req.params.videoId);
+      const video = await storage.getVideoById(videoId);
+      
+      if (!video) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+      
+      res.json(video);
+    } catch (error) {
+      console.error("Fetch video error:", error);
+      res.status(500).json({ message: "Failed to fetch video" });
+    }
+  });
+
   app.delete("/api/bookmarks/:bookmarkId", async (req, res) => {
     try {
       const bookmarkId = parseInt(req.params.bookmarkId);

@@ -51,16 +51,66 @@ export default function Home() {
 
   const searchMutation = useYouTubeSearch();
 
-  // Handle URL query parameter for "Search Again" functionality
+  // Handle URL parameters for search or bookmark restoration
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const queryParam = urlParams.get('q');
-    if (queryParam && queryParam.trim()) {
+    const bookmarkParam = urlParams.get('bookmark');
+    
+    if (bookmarkParam) {
+      handleBookmarkRestore(parseInt(bookmarkParam));
+    } else if (queryParam && queryParam.trim()) {
       handleSearch(queryParam);
-      // Clean up URL
+    }
+    
+    // Clean up URL
+    if (queryParam || bookmarkParam) {
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
+
+  const handleBookmarkRestore = async (bookmarkId: number) => {
+    try {
+      const response = await fetch(`/api/bookmark/${bookmarkId}`);
+      if (!response.ok) {
+        throw new Error('Bookmark not found');
+      }
+      
+      const bookmark: Bookmark = await response.json();
+      
+      // Fetch the videos by their IDs
+      const videoPromises = bookmark.videoIds.map(async (videoId) => {
+        const videoResponse = await fetch(`/api/videos/${videoId}`);
+        if (videoResponse.ok) {
+          return videoResponse.json();
+        }
+        return null;
+      });
+      
+      const videos = (await Promise.all(videoPromises)).filter(Boolean);
+      
+      setSearchResults(videos);
+      setCurrentQuery(bookmark.searchQuery);
+      
+      toast({
+        title: "Bookmark Restored",
+        description: `Showing saved videos for "${bookmark.searchQuery}"`,
+      });
+      
+      // Scroll to results
+      setTimeout(() => {
+        document.getElementById('results-section')?.scrollIntoView({ 
+          behavior: 'smooth' 
+        });
+      }, 100);
+    } catch (error) {
+      toast({
+        title: "Bookmark Error",
+        description: "Could not restore bookmarked videos",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleSearch = async (query: string) => {
     // Track search in GA
