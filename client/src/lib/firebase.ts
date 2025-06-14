@@ -3,9 +3,9 @@ import { getAuth, signInWithRedirect, GoogleAuthProvider, getRedirectResult, sig
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`,
+  authDomain: "learn3-c6f29.firebaseapp.com",
+  projectId: "learn3-c6f29",
+  storageBucket: "learn3-c6f29.firebasestorage.app",
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
