@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Bookmark, BookmarkCheck } from "lucide-react";
+import { Bookmark, BookmarkCheck, ExternalLink } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { signInWithGoogle } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -42,6 +42,16 @@ export function BookmarkButton({ searchQuery, videos }: BookmarkButtonProps) {
       toast({
         title: "Videos Saved",
         description: "You can find these videos in your saved searches.",
+        action: (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => window.location.href = '/bookmarks'}
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            View Bookmarks
+          </Button>
+        ),
       });
     },
     onError: (error: any) => {

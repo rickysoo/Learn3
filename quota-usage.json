@@ -90,25 +90,30 @@
     }
   },
   "2025-06-14": {
-    "1": {
-      "searchCalls": 6,
-      "detailCalls": 6,
-      "totalUnits": 690
-    },
-    "2": {
-      "searchCalls": 6,
-      "detailCalls": 6,
-      "totalUnits": 690
-    },
-    "3": {
-      "searchCalls": 2,
-      "detailCalls": 2,
-      "totalUnits": 230
-    },
-    "4": {
+    "0": {
       "searchCalls": 1,
       "detailCalls": 1,
       "totalUnits": 115
+    },
+    "1": {
+      "searchCalls": 8,
+      "detailCalls": 8,
+      "totalUnits": 920
+    },
+    "2": {
+      "searchCalls": 7,
+      "detailCalls": 7,
+      "totalUnits": 805
+    },
+    "3": {
+      "searchCalls": 3,
+      "detailCalls": 3,
+      "totalUnits": 345
+    },
+    "4": {
+      "searchCalls": 2,
+      "detailCalls": 2,
+      "totalUnits": 230
     }
   }
 }

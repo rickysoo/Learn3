@@ -109,6 +109,8 @@ Changelog:
 - June 14, 2025: Implemented bookmark functionality for registered users
 - June 14, 2025: Added video publication dates and auto-play features
 - June 14, 2025: Fixed Safari logo visibility with SVG implementation
+- June 14, 2025: Enhanced bookmark system to restore exact saved videos instead of fresh searches
+- June 14, 2025: Added "View Bookmarks" link in success message for improved user flow
 ```
 
 ## Firebase Configuration Required
