@@ -20,7 +20,7 @@ export default function Bookmarks() {
 
   const deleteBookmarkMutation = useMutation({
     mutationFn: async (bookmarkId: number) => {
-      const response = await apiRequest(`/api/bookmarks/${bookmarkId}`, 'DELETE', { userId: user?.uid });
+      const response = await apiRequest('DELETE', `/api/bookmarks/${bookmarkId}`, { userId: user?.uid });
       return response.json();
     },
     onSuccess: () => {
@@ -44,8 +44,10 @@ export default function Bookmarks() {
   };
 
   const handleSearchAgain = (query: string) => {
-    // Navigate to home and trigger search
-    window.location.href = `/?search=${encodeURIComponent(query)}`;
+    // Navigate to home with query parameter
+    const url = new URL(window.location.origin);
+    url.searchParams.set('q', query);
+    window.location.href = url.toString();
   };
 
   if (!user) {

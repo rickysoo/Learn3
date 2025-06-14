@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { VideoCard } from "@/components/VideoCard";
 import { VideoModal } from "@/components/VideoModal";
@@ -49,6 +49,17 @@ export default function Home() {
   const { toast } = useToast();
 
   const searchMutation = useYouTubeSearch();
+
+  // Handle URL query parameter for "Search Again" functionality
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryParam = urlParams.get('q');
+    if (queryParam && queryParam.trim()) {
+      handleSearch(queryParam);
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   const handleSearch = async (query: string) => {
     // Track search in GA
