@@ -10,9 +10,10 @@ import { useYouTubeSearch } from "@/hooks/useYouTubeSearch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, ArrowDown, GraduationCap } from "lucide-react";
-import type { Video } from "@shared/schema";
+import type { Video, Bookmark } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { trackSearch, trackVideoPlay } from "@/lib/analytics";
+import { useQuery } from "@tanstack/react-query";
 // Safari-compatible SVG logo component
 const Learn3Logo = ({ className = "w-10 h-10" }: { className?: string }) => (
   <svg 

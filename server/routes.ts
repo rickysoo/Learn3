@@ -965,6 +965,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get specific bookmark by ID
+  app.get("/api/bookmark/:bookmarkId", async (req, res) => {
+    try {
+      const bookmarkId = parseInt(req.params.bookmarkId);
+      const bookmark = await storage.getBookmarkById(bookmarkId);
+      
+      if (!bookmark) {
+        return res.status(404).json({ message: "Bookmark not found" });
+      }
+      
+      res.json(bookmark);
+    } catch (error) {
+      console.error("Fetch bookmark error:", error);
+      res.status(500).json({ message: "Failed to fetch bookmark" });
+    }
+  });
+
   app.delete("/api/bookmarks/:bookmarkId", async (req, res) => {
     try {
       const bookmarkId = parseInt(req.params.bookmarkId);

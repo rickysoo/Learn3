@@ -43,10 +43,10 @@ export default function Bookmarks() {
     deleteBookmarkMutation.mutate(bookmarkId);
   };
 
-  const handleSearchAgain = (query: string) => {
-    // Navigate to home with query parameter
+  const handleViewBookmark = (bookmark: Bookmark) => {
+    // Navigate to home with bookmark data to restore exact videos
     const url = new URL(window.location.origin);
-    url.searchParams.set('q', query);
+    url.searchParams.set('bookmark', bookmark.id.toString());
     window.location.href = url.toString();
   };
 
@@ -115,10 +115,10 @@ export default function Bookmarks() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleSearchAgain(bookmark.searchQuery)}
+                        onClick={() => handleViewBookmark(bookmark)}
                       >
                         <Play className="h-4 w-4 mr-2" />
-                        Search Again
+                        View Videos
                       </Button>
                     </div>
                   </div>

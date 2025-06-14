@@ -21,6 +21,7 @@ export interface IStorage {
   getUserBookmarks(userId: string): Promise<Bookmark[]>;
   deleteBookmark(bookmarkId: number, userId: string): Promise<void>;
   getBookmarkByUserAndQuery(userId: string, query: string): Promise<Bookmark | null>;
+  getBookmarkById(bookmarkId: number): Promise<Bookmark | null>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -96,6 +97,11 @@ export class DatabaseStorage implements IStorage {
     const [bookmark] = await db.select().from(bookmarks).where(
       and(eq(bookmarks.userId, userId), eq(bookmarks.searchQuery, query))
     );
+    return bookmark || null;
+  }
+
+  async getBookmarkById(bookmarkId: number): Promise<Bookmark | null> {
+    const [bookmark] = await db.select().from(bookmarks).where(eq(bookmarks.id, bookmarkId));
     return bookmark || null;
   }
 }
