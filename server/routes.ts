@@ -982,6 +982,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get video by YouTube ID (more specific route first)
+  app.get("/api/videos/youtube/:youtubeId", async (req, res) => {
+    try {
+      const { youtubeId } = req.params;
+      const video = await storage.getVideoByYouTubeId(youtubeId);
+      
+      if (!video) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+      
+      res.json(video);
+    } catch (error) {
+      console.error("Fetch video by YouTube ID error:", error);
+      res.status(500).json({ message: "Failed to fetch video" });
+    }
+  });
+
   // Get video by ID
   app.get("/api/videos/:videoId", async (req, res) => {
     try {

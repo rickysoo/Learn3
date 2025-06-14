@@ -78,9 +78,9 @@ export default function Home() {
       
       const bookmark: Bookmark = await response.json();
       
-      // Fetch the videos by their IDs
-      const videoPromises = bookmark.videoIds.map(async (videoId) => {
-        const videoResponse = await fetch(`/api/videos/${videoId}`);
+      // Fetch the videos by their YouTube IDs
+      const videoPromises = bookmark.videoIds.map(async (youtubeId) => {
+        const videoResponse = await fetch(`/api/videos/youtube/${youtubeId}`);
         if (videoResponse.ok) {
           return videoResponse.json();
         }
