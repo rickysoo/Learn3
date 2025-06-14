@@ -33,7 +33,7 @@ export function BookmarkButton({ searchQuery, videos }: BookmarkButtonProps) {
 
   const createBookmarkMutation = useMutation({
     mutationFn: async (bookmarkData: any) => {
-      const response = await apiRequest('/api/bookmarks', 'POST', bookmarkData);
+      const response = await apiRequest('POST', '/api/bookmarks', bookmarkData);
       return response.json();
     },
     onSuccess: () => {

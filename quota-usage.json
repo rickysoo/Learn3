@@ -91,14 +91,14 @@
   },
   "2025-06-14": {
     "1": {
-      "searchCalls": 2,
-      "detailCalls": 2,
-      "totalUnits": 230
+      "searchCalls": 3,
+      "detailCalls": 3,
+      "totalUnits": 345
     },
     "2": {
-      "searchCalls": 2,
-      "detailCalls": 2,
-      "totalUnits": 230
+      "searchCalls": 3,
+      "detailCalls": 3,
+      "totalUnits": 345
     },
     "3": {
       "searchCalls": 1,
