@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookmarkX, Calendar, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import type { Bookmark } from "@shared/schema";
 
 export default function Bookmarks() {
@@ -128,6 +129,8 @@ export default function Bookmarks() {
           )}
         </div>
       )}
+      
+      <Footer />
     </div>
   );
 }
