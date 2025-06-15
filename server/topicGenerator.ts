@@ -1,6 +1,5 @@
 import OpenAI from "openai";
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 interface TopicResponse {
@@ -10,18 +9,32 @@ interface TopicResponse {
 export async function generateRandomTopics(count: number = 5): Promise<string[]> {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: `You are an educational topic generator. Generate diverse learning topics from various fields that would be suitable for YouTube video searches. Topics should vary in scope - some broad (like "Economics"), some narrow (like "Supervised Learning"), and some skill-based (like "Public Speaking"). 
+          content: `You are an educational topic generator. Generate diverse learning topics from an extremely wide range of fields that would be suitable for YouTube video searches. Cast a very wide net across all possible areas of human knowledge and skills.
+
+Include topics from these expanded categories:
+- Sciences: Biology, Chemistry, Physics, Astronomy, Geology, Environmental Science, Marine Biology
+- Technology: Programming, AI, Cybersecurity, Web Development, Mobile Apps, Data Science, Robotics
+- Creative Arts: Photography, Music Production, Digital Art, Animation, Film Making, Creative Writing, Graphic Design
+- Physical Skills: Martial Arts, Dance, Sports, Fitness, Yoga, Rock Climbing, Swimming
+- Crafts & Hobbies: Woodworking, Pottery, Knitting, Gardening, Cooking, Baking, Home Brewing
+- Business & Finance: Entrepreneurship, Investment, Marketing, Sales, Real Estate, Cryptocurrency
+- Personal Development: Public Speaking, Time Management, Meditation, Memory Techniques, Speed Reading
+- Languages: Spanish, French, Mandarin, Sign Language, Ancient Languages
+- History & Culture: World History, Art History, Philosophy, Anthropology, Archaeology
+- Practical Life Skills: Car Maintenance, Home Repair, Budgeting, Cooking, First Aid
+- Academic Subjects: Mathematics, Literature, Psychology, Sociology, Economics, Political Science
+- Emerging Fields: Sustainable Living, Urban Farming, Renewable Energy, Space Technology
 
 The topics should be:
 - Educational and learnable through videos
-- Diverse across different fields (science, technology, business, arts, personal development, etc.)
+- Extremely diverse across all possible fields of human knowledge
 - Suitable for a 3-level learning progression (beginner to advanced)
 - Specific enough to find quality educational content
-- Not too niche or obscure
+- Include both mainstream and niche subjects
 - IMPORTANT: Each topic must be 1 to 5 words only
 
 Respond with JSON in this exact format: { "topics": ["Topic 1", "Topic 2", ...] }`

@@ -112,7 +112,7 @@ async function scoreVideoRelevance(video: any, topic: string): Promise<{ score: 
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -338,7 +338,7 @@ async function processYouTubeResults(allVideos: any[], apiKey: string, keyIndex:
       console.log("Video titles being scored:", videosToProcess.map((v: any) => v.title));
 
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-4o-mini", 
         messages: [
           {
             role: "system",
@@ -509,7 +509,7 @@ async function optimizeLearningPath(videos: any[], query: string): Promise<any[]
       console.log(`AI analyzing difficulty levels for topic: "${query}"`);
 
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-4o-mini", 
         messages: [
           {
             role: "system",
