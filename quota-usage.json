@@ -96,14 +96,14 @@
       "totalUnits": 115
     },
     "1": {
+      "searchCalls": 11,
+      "detailCalls": 11,
+      "totalUnits": 1265
+    },
+    "2": {
       "searchCalls": 10,
       "detailCalls": 10,
       "totalUnits": 1150
-    },
-    "2": {
-      "searchCalls": 9,
-      "detailCalls": 9,
-      "totalUnits": 1035
     },
     "3": {
       "searchCalls": 3,
