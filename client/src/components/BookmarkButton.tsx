@@ -3,7 +3,7 @@ import { Bookmark, BookmarkCheck, ExternalLink } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { signInWithGoogle } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import type { Video, Bookmark as BookmarkType } from "@shared/schema";
@@ -18,6 +18,7 @@ export function BookmarkButton({ searchQuery, videos }: BookmarkButtonProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [pendingSave, setPendingSave] = useState(false);
 
   // Check if search is already bookmarked
   const { data: bookmarks } = useQuery({
@@ -30,6 +31,50 @@ export function BookmarkButton({ searchQuery, videos }: BookmarkButtonProps) {
   const existingBookmark = Array.isArray(bookmarks) ? bookmarks.find((b: BookmarkType) => 
     b.searchQuery.toLowerCase() === searchQuery.toLowerCase()
   ) : null;
+
+  // Auto-save after login if user was trying to save before
+  useEffect(() => {
+    if (user && pendingSave && videos.length > 0 && !existingBookmark) {
+      const bookmarkData = {
+        userId: user.uid,
+        userEmail: user.email!,
+        userName: user.displayName || undefined,
+        searchQuery,
+        videoIds: videos.map(v => v.youtubeId),
+      };
+      
+      // Save the bookmark automatically
+      apiRequest('POST', '/api/bookmarks', bookmarkData)
+        .then(response => response.json())
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: [`/api/bookmarks/${user.uid}`] });
+          setIsBookmarked(true);
+          toast({
+            title: "Videos Saved",
+            description: "Your videos have been automatically saved after signing in.",
+            action: (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => window.location.href = '/bookmarks'}
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                View Bookmarks
+              </Button>
+            ),
+          });
+        })
+        .catch((error: any) => {
+          toast({
+            title: "Bookmark Failed",
+            description: error.message || "Could not bookmark this search.",
+            variant: "destructive",
+          });
+        });
+      
+      setPendingSave(false);
+    }
+  }, [user, pendingSave, videos, existingBookmark, searchQuery, queryClient, toast]);
 
   const createBookmarkMutation = useMutation({
     mutationFn: async (bookmarkData: any) => {
@@ -65,7 +110,8 @@ export function BookmarkButton({ searchQuery, videos }: BookmarkButtonProps) {
 
   const handleBookmark = async () => {
     if (!user) {
-      // Prompt user to sign in
+      // Set pending save state and prompt user to sign in
+      setPendingSave(true);
       toast({
         title: "Sign In Required",
         description: "Sign in with Google to save your video searches.",
