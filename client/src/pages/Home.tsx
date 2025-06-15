@@ -6,6 +6,7 @@ import { LoadingState } from "@/components/LoadingState";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { AuthButton } from "@/components/AuthButton";
 import { BookmarkButton } from "@/components/BookmarkButton";
+import { ShareButton } from "@/components/ShareButton";
 import { useYouTubeSearch } from "@/hooks/useYouTubeSearch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -246,7 +247,10 @@ export default function Home() {
                   Learning Path: <span className="text-primary">{currentQuery}</span>
                 </h3>
                 <p className="text-slate-600 mb-6">Here's your personalized 3-level learning journey</p>
-                <BookmarkButton searchQuery={currentQuery} videos={searchResults} />
+                <div className="flex items-center justify-center gap-3">
+                  <BookmarkButton searchQuery={currentQuery} videos={searchResults} />
+                  <ShareButton searchQuery={currentQuery} />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
