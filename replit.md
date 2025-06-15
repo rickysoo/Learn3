@@ -112,6 +112,7 @@ Changelog:
 - June 14, 2025: Enhanced bookmark system to restore exact saved videos instead of fresh searches
 - June 14, 2025: Added "View Bookmarks" link in success message for improved user flow
 - June 14, 2025: Implemented device-specific video behavior - mobile opens YouTube app, desktop/tablet uses embedded player with autoplay
+- June 14, 2025: Updated all OpenAI models to GPT-4o-mini for cost efficiency and expanded topic generation to include 8 diverse subjects across all fields of human knowledge
 ```
 
 ## Firebase Configuration Required

@@ -6,7 +6,7 @@ interface TopicResponse {
   topics: string[];
 }
 
-export async function generateRandomTopics(count: number = 5): Promise<string[]> {
+export async function generateRandomTopics(count: number = 8): Promise<string[]> {
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -58,10 +58,12 @@ Respond with JSON in this exact format: { "topics": ["Topic 1", "Topic 2", ...] 
   } catch (error) {
     console.error("Error generating topics with OpenAI:", error);
     
-    // Fallback to a few basic topics if OpenAI fails
+    // Fallback to diverse topics if OpenAI fails
     const fallbackTopics = [
       "Machine Learning", "Public Speaking", "Photography", 
-      "Data Science", "Leadership"
+      "Data Science", "Leadership", "Woodworking", "Urban Gardening", 
+      "Marine Biology", "Digital Art", "Rock Climbing", 
+      "Home Brewing", "Cryptocurrency", "Meditation"
     ];
     
     return fallbackTopics.slice(0, count);
