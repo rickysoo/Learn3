@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExternalLink, Play } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Video } from "@shared/schema";
 
 interface VideoCardProps {
@@ -47,9 +48,16 @@ export function VideoCard({ video, levelNumber, onPlay }: VideoCardProps) {
   const level = video.level as keyof typeof LEVEL_COLORS;
   const colorClass = LEVEL_COLORS[level] || LEVEL_COLORS["level 1"];
   const levelLabel = LEVEL_LABELS[level] || `Level ${levelNumber}`;
+  const isMobile = useIsMobile();
 
   const handlePlayClick = () => {
-    onPlay(video);
+    if (isMobile) {
+      // On mobile, open in YouTube app
+      window.open(`https://www.youtube.com/watch?v=${video.youtubeId}`, '_blank');
+    } else {
+      // On desktop/tablet, use modal with autoplay
+      onPlay(video);
+    }
   };
 
   const handleYouTubeClick = () => {
