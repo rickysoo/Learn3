@@ -245,7 +245,6 @@ export default function Home() {
       <footer className="bg-slate-900 text-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <Learn3Logo />
             <h1 className="text-xl font-bold text-white">Learn3</h1>
           </div>
           <p className="text-slate-400 mb-4">
